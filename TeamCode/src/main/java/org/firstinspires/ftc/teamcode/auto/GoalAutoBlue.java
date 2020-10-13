@@ -51,6 +51,8 @@ public class GoalAutoBlue extends LinearOpMode {
     ChassisAssembly chassis = null;;
     List<VuforiaTrackable> allTrackables = null;
     TFObjectDetector tfod = null;
+
+
     //Time
     ElapsedTime runtime = new ElapsedTime();
     int numRings = 0;
@@ -67,14 +69,24 @@ public class GoalAutoBlue extends LinearOpMode {
         //Wait for Start
         telemetry.addData("Waiting for start", "");
         VuforiaTrackable blueTower = allTrackables.get(0);
-
+        int[] stackArray = {0, 0, 0};
         while (!opModeIsActive() && !isStopRequested())
         {
-            telemetry.addData("About to scan stack ", "");
-            String stack = vcortex.checkStarterStack(5);
-            telemetry.addData("Stack is ", stack);
+            telemetry.addData("Scanning stack ", "..Waiting for Start");
             telemetry.update();
-
+            int stack = vcortex.checkStarterStack(3);
+            if(stack==0)
+            {
+                stackArray[0] = stackArray[0] + 1;
+            }
+            else if(stack==1)
+            {
+                stackArray[1] = stackArray[1] + 1;
+            }
+            else if(stack==4)
+            {
+                stackArray[2] = stackArray[2] + 1;
+            }
         }
 
 
@@ -85,12 +97,53 @@ public class GoalAutoBlue extends LinearOpMode {
          */
 
         telemetry.addData("Starting Autonomous ", "");
+        String recognizedStack =   getStackScanResult(stackArray);
+        sleep(2000);
 
 
         //preparation();
-        alignWithTarget(blueTower);
+        //alignWithTarget(blueTower);
     }
 
+    public String  getStackScanResult(int stack[])
+    {
+        int highestValue;
+        int index = 0;
+        int i = 0;
+        highestValue = stack[0];
+        int totalTries = 0;
+        String stackScanned = "NONE";
+        while(i<3)
+        {
+            totalTries = totalTries + stack[i];
+            if(highestValue < stack[i])
+            {
+                highestValue = stack[i];
+                index = i;
+            }
+            i++;
+        }
+        telemetry.addData("Score  is " + highestValue + "out of " + totalTries , "") ;
+
+        if(index==0)
+        {
+            telemetry.addData("Stack has  ", "None");
+            stackScanned ="NONE";
+        }
+        else if(index==1)
+        {
+            telemetry.addData("Stack has  ", "One");
+            stackScanned ="ONE";
+        }
+        else
+        {
+            telemetry.addData("Stack has  ", "Four");
+            stackScanned ="QUAD";
+        }
+        telemetry.update();
+        return stackScanned;
+
+    }
     public void preparation()
     {
         runtime.reset();
