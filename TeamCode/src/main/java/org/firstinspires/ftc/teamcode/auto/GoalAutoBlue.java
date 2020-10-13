@@ -71,7 +71,6 @@ public class GoalAutoBlue extends LinearOpMode {
         while (!opModeIsActive() && !isStopRequested())
         {
             telemetry.addData("About to scan stack ", "");
-            telemetry.update();
             String stack = vcortex.checkStarterStack(5);
             telemetry.addData("Stack is ", stack);
             telemetry.update();
