@@ -85,9 +85,8 @@ import static org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocaliz
  */
 
 
-@TeleOp(name="ULTIMATEGOAL Vuforia Nav Webcam", group ="Concept")
-@Disabled
-public class ConceptVuforiaUltimateGoalNavigationWebcam extends LinearOpMode {
+@TeleOp(name="WebcamVuforiaTest", group ="Test")
+public class TestUltimateGoalNavigationWebcam extends LinearOpMode {
 
     // IMPORTANT: If you are using a USB WebCam, you must select CAMERA_CHOICE = BACK; and PHONE_IS_PORTRAIT = false;
     private static final VuforiaLocalizer.CameraDirection CAMERA_CHOICE = BACK;
@@ -137,7 +136,7 @@ public class ConceptVuforiaUltimateGoalNavigationWebcam extends LinearOpMode {
         /*
          * Retrieve the camera we are to use.
          */
-        webcamName = hardwareMap.get(WebcamName.class, "Webcam 1");
+        webcamName = hardwareMap.get(WebcamName.class, "webcam");
 
         /*
          * Configure Vuforia by creating a Parameter object, and passing it to the Vuforia engine.
@@ -269,9 +268,9 @@ public class ConceptVuforiaUltimateGoalNavigationWebcam extends LinearOpMode {
 
         // Note: To use the remote camera preview:
         // AFTER you hit Init on the Driver Station, use the "options menu" to select "Camera Stream"
-        // Tap the preview window to receive a fresh image. targetsUltimateGoal.activate();
+        // Tap the preview window to receive a fresh image.
 
-
+        targetsUltimateGoal.activate();
         while (!isStopRequested()) {
 
             // check all the trackable targets to see which one (if any) is visible.

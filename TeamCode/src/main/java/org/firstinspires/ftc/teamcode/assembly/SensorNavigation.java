@@ -1,12 +1,13 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.assembly;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.teamcode.assembly.RobotHardware;
 
-public class Navigation
+public class SensorNavigation
 {
     RobotHardware robotHardware;
 
-    public Navigation(RobotHardware hardware)
+    public SensorNavigation(RobotHardware hardware)
     {
         robotHardware = hardware;
     }

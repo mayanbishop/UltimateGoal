@@ -1,7 +1,6 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.assembly;
 
 import com.qualcomm.robotcore.hardware.HardwareMap;
-
 
 
 /**
@@ -13,15 +12,15 @@ public class UltimateBot
 
     private static RobotHardware robotHardware = null;
     private ChassisAssembly chassisAssembly = null;
-    private Navigation navigation = null;
-    private VuforiaTracking vuforia = null;
+    private SensorNavigation navigation = null;
+    private VisualCortex vuforia_tf = null;
 
     public void initRobot (HardwareMap hwMap)
     {
         robotHardware = new RobotHardware(hwMap);
         buildChassisAssembly();
         buildNavigation();
-        startVuforiaSensing();
+        initializeVuforiaAndTensorFlow();
 
     }
     public void buildChassisAssembly () {
@@ -34,15 +33,17 @@ public class UltimateBot
     }
     public void buildNavigation()
     {
-        this.navigation = new Navigation(robotHardware);
+        this.navigation = new SensorNavigation(robotHardware);
     }
-    private void startVuforiaSensing()
+    private void initializeVuforiaAndTensorFlow()
     {
-        this.vuforia = new VuforiaTracking(robotHardware);
-        this.vuforia.initializeTracking();
+        this.vuforia_tf = new VisualCortex(robotHardware);
+        vuforia_tf.initVuforia();
+        vuforia_tf.initTfod();
+        vuforia_tf.loadTrackables();
     }
-    public Navigation getNavigation(){return navigation;};
-    public VuforiaTracking getVuforia(){return vuforia;}
+    public SensorNavigation getNavigation(){return navigation;};
+    public VisualCortex getVisualCortex(){return vuforia_tf;}
     public RobotHardware getRobotHardware() {
         return robotHardware;
     }

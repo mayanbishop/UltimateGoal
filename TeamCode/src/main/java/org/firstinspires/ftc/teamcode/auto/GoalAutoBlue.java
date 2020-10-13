@@ -1,28 +1,24 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.auto;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
 import org.firstinspires.ftc.robotcore.external.matrices.VectorF;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
-import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackableDefaultListener;
-import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
+import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
+import org.firstinspires.ftc.teamcode.assembly.ChassisAssembly;
+import org.firstinspires.ftc.teamcode.assembly.SensorNavigation;
+import org.firstinspires.ftc.teamcode.assembly.VisualCortex;
+import org.firstinspires.ftc.teamcode.assembly.UltimateBot;
 
-import java.util.ArrayList;
 import java.util.List;
+import android.util.Log;
 
-import static org.firstinspires.ftc.robotcore.external.navigation.AngleUnit.DEGREES;
-import static org.firstinspires.ftc.robotcore.external.navigation.AxesOrder.XYZ;
-import static org.firstinspires.ftc.robotcore.external.navigation.AxesOrder.YZX;
-import static org.firstinspires.ftc.robotcore.external.navigation.AxesReference.EXTRINSIC;
-import static org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer.CameraDirection.BACK;
 
 
 @Autonomous(name = "GoalAutoBlue", group = "Qualifier")
@@ -50,10 +46,11 @@ public class GoalAutoBlue extends LinearOpMode {
    
     //Creating a  robot object
     UltimateBot ultimateBot = new UltimateBot();
-    VuforiaTracking vuforia = null;
-    Navigation nav = null;
+    VisualCortex vcortex = null;
+    SensorNavigation nav = null;
     ChassisAssembly chassis = null;;
-
+    List<VuforiaTrackable> allTrackables = null;
+    TFObjectDetector tfod = null;
     //Time
     ElapsedTime runtime = new ElapsedTime();
     int numRings = 0;
@@ -62,25 +59,38 @@ public class GoalAutoBlue extends LinearOpMode {
         
         //Intialize Robot
         ultimateBot.initRobot(hardwareMap);
-        vuforia = ultimateBot.getVuforia();
+        vcortex = ultimateBot.getVisualCortex();
         nav = ultimateBot.getNavigation();
         chassis = ultimateBot.getChassisAssembly();;
-
-        List<VuforiaTrackable> allTrackables = vuforia.getTrackables();
-        VuforiaTrackable blueTower = allTrackables.get(0);
-        
+        allTrackables = vcortex.getTrackables();
+        tfod =  vcortex.getTfod();
         //Wait for Start
         telemetry.addData("Waiting for start", "");
-        telemetry.update();
-        waitForStart();
+        VuforiaTrackable blueTower = allTrackables.get(0);
+
+        while (!opModeIsActive() && !isStopRequested())
+        {
+            telemetry.addData("About to scan stack ", "");
+            telemetry.update();
+            String stack = vcortex.checkStarterStack(5);
+            telemetry.addData("Stack is ", stack);
+            telemetry.update();
+
+        }
+
+
+        //waitForStart();
 
         /**
          * DURING RUNTIME
          */
 
-        preparation();
-        scanForTarget(blueTower);
+        telemetry.addData("Starting Autonomous ", "");
+        Log.d("GoalAutoBlue", "Starting Autonomous");
 
+
+        //preparation();
+        alignWithTarget(blueTower);
     }
 
     public void preparation()
@@ -95,31 +105,43 @@ public class GoalAutoBlue extends LinearOpMode {
 
 
     }
-    public void scanForTarget(VuforiaTrackable target)
-    {
-        boolean targetVisible = false;
-        ElapsedTime senseTime = new ElapsedTime();
-        while (vuforia.scanTarget(target.getName())  == false && opModeIsActive() && senseTime.seconds() < 1)
-        {
-            break;
-        }
 
-        telemetry.addData("Target Found", targetVisible);
-        telemetry.update();
-        chassis.stopMoving();
 
-    }
 
-    public void alignWithSkyStone(VuforiaTrackable target)
+
+    public void alignWithTarget(VuforiaTrackable target)
     {
         straightenLeft(1);
         //Get the new location of the target and ensure that the target is still visible
-        OpenGLMatrix lastLocation = null;
+        OpenGLMatrix lastLocation = vcortex.getCurrentLocationFromTarget(target, 5);
 
-        if (((VuforiaTrackableDefaultListener) target.getListener()).isVisible()) {
-            OpenGLMatrix robotLocationTransform = ((VuforiaTrackableDefaultListener) target.getListener()).getUpdatedRobotLocation();
-            if (robotLocationTransform != null) {
-                lastLocation = robotLocationTransform;
+        if (lastLocation !=null) {
+            //Find the position of the target
+            VectorF translation = lastLocation.getTranslation();
+            double currentPos = nav.rightDistance();
+
+            double targetShift = translation.get(1)/mmPerInch;
+
+            //Target Position
+            double ringPos = currentPos - targetShift + 14;//plus 4 because of the the distance betweeen the camera and the sensors
+
+            numRings = (int) (Math.ceil(ringPos / 8));
+
+            //Print the Result
+            telemetry.addData("currentPos", currentPos);
+            telemetry.addData("Pos (in)", "{X, Y, Z} = %.1f, %.1f, %.1f",
+                    translation.get(0) / mmPerInch, translation.get(1) / mmPerInch, translation.get(2) / mmPerInch);
+            telemetry.addData("Block Position", ringPos);
+            telemetry.addData("Block #", numRings);
+            telemetry.addData("Shift" , Math.abs(targetShift + 8));
+            telemetry.update();
+            sleep(250);
+
+            //Shift the Robot so that the arm is Centered
+            if(Math.abs(targetShift + 8) > 2)
+            {
+                encoderSide(WHEEL_SPEED, targetShift + 8, 5);
+                chassis.stopMoving();
             }
         }
         else
@@ -130,33 +152,7 @@ public class GoalAutoBlue extends LinearOpMode {
         }
 
 
-        //Find the position of the target
-        VectorF translation = lastLocation.getTranslation();
-        double currentPos = nav.rightDistance();
 
-        double targetShift = translation.get(1)/mmPerInch;
-
-        //Target Position
-        double ringPos = currentPos - targetShift + 14;//plus 4 because of the the distance betweeen the camera and the sensors
-
-        numRings = (int) (Math.ceil(ringPos / 8));
-
-        //Print the Result
-        telemetry.addData("currentPos", currentPos);
-        telemetry.addData("Pos (in)", "{X, Y, Z} = %.1f, %.1f, %.1f",
-                translation.get(0) / mmPerInch, translation.get(1) / mmPerInch, translation.get(2) / mmPerInch);
-        telemetry.addData("Block Position", ringPos);
-        telemetry.addData("Block #", numRings);
-        telemetry.addData("Shift" , Math.abs(targetShift + 8));
-        telemetry.update();
-        sleep(250);
-
-        //Shift the Robot so that the arm is Centered
-        if(Math.abs(targetShift + 8) > 2)
-        {
-            encoderSide(WHEEL_SPEED, targetShift + 8, 5);
-            chassis.stopMoving();
-        }
     }
 
 
@@ -173,8 +169,6 @@ public class GoalAutoBlue extends LinearOpMode {
             angle = 0;
         }
         telemetry.addData("Angle", angle);
-        telemetry.addData("MRFL", ultimateBot.getNavigation().frontLeftDistance());
-        telemetry.addData("MRBL", ultimateBot.getNavigation().backLeftDistance());
         telemetry.update();
 
         if(Math.abs(angle) > 5)

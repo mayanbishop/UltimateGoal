@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.assembly;
 
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
@@ -65,7 +65,7 @@ public class RobotHardware
 
         webcam = hwMap.get(WebcamName.class, "webcam");
         imu = hwMap.get(BNO055IMU.class, "imu");
-
+/*
         frontRightSensor = hwMap.get(Rev2mDistanceSensor.class, "frontRightSensor");
         backRightSensor = hwMap.get(Rev2mDistanceSensor.class, "backRightSensor");
 
@@ -74,7 +74,7 @@ public class RobotHardware
 
         backLaser = hwMap.get(Rev2mDistanceSensor.class, "backSensor");
         frontLaser = hwMap.get(Rev2mDistanceSensor.class, "frontSensor");
-
+*/
 
     }
 

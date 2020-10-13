@@ -1,9 +1,10 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.assembly;
 
 
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
 import org.firstinspires.ftc.robotcore.external.matrices.VectorF;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
@@ -11,20 +12,22 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackableDefaultListener;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
+import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
+import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
 
 import java.util.ArrayList;
 import java.util.List;
 
-
-import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.telemetry;
+import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.hardwareMap;
 import static org.firstinspires.ftc.robotcore.external.navigation.AngleUnit.DEGREES;
 import static org.firstinspires.ftc.robotcore.external.navigation.AxesOrder.XYZ;
 import static org.firstinspires.ftc.robotcore.external.navigation.AxesOrder.YZX;
 import static org.firstinspires.ftc.robotcore.external.navigation.AxesReference.EXTRINSIC;
 import static org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer.CameraDirection.BACK;
 
+import android.util.Log;
 
-public class VuforiaTracking  {
+public class VisualCortex {
     // IMPORTANT: If you are using a USB WebCam, you must select CAMERA_CHOICE = BACK; and PHONE_IS_PORTRAIT = false;
     private static final VuforiaLocalizer.CameraDirection CAMERA_CHOICE = BACK;
     private static final boolean PHONE_IS_PORTRAIT = false;
@@ -39,36 +42,31 @@ public class VuforiaTracking  {
     private static final float halfField = 72 * mmPerInch;
     private static final float quadField = 36 * mmPerInch;
     // Class Members
+    private static final String TFOD_MODEL_ASSET = "UltimateGoal.tflite";
+    private static final String LABEL_FIRST_ELEMENT = "Quad";
+    private static final String LABEL_SECOND_ELEMENT = "Single";
 
     private VuforiaLocalizer vuforia = null;
+    private VuforiaLocalizer.Parameters parameters = null;
+    private TFObjectDetector tfod;
 
     //Time
     ElapsedTime runtime = new ElapsedTime();
 
-    List<VuforiaTrackable> allTrackables = new ArrayList<VuforiaTrackable>();
+    public static List<VuforiaTrackable> allTrackables = new ArrayList<VuforiaTrackable>();
     private float phoneXRotate = 0;
     private float phoneYRotate = 0;
     private float phoneZRotate = 0;
 
     RobotHardware robotHardware;
 
-    public  VuforiaTracking(RobotHardware hardware)
+    public VisualCortex(RobotHardware hardware)
     {
         robotHardware = hardware;
     }
 
-    public void initializeTracking() {
-        int cameraMonitorViewId = robotHardware.getHwMap().appContext.getResources().getIdentifier("cameraMonitorViewId", "id", robotHardware.getHwMap().appContext.getPackageName());
-        VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
+    public void loadTrackables() {
 
-        parameters.vuforiaLicenseKey = VUFORIA_KEY;
-        parameters.cameraName = robotHardware.webcam;
-
-        // Make sure extended tracking is disabled for this example.
-        parameters.useExtendedTracking = false;
-
-        //  Instantiate the Vuforia engine
-        vuforia = ClassFactory.getInstance().createVuforia(parameters);
 
         // Load the data sets for the trackable objects. These particular data
         // sets are stored in the 'assets' part of our application.
@@ -86,7 +84,6 @@ public class VuforiaTracking  {
 
 
         allTrackables.addAll(targetsUltimateGoal);
-
 
         //Set the position of the perimeter targets with relation to origin (center of field)
         redAllianceTarget.setLocation(OpenGLMatrix
@@ -134,57 +131,144 @@ public class VuforiaTracking  {
 
     }
 
-    public boolean scanTarget(String targetName) {
 
-        OpenGLMatrix lastLocation = null;
-        ElapsedTime runtime = new ElapsedTime();
-        boolean targetVisible = false;
-        while (runtime.seconds() < 10) {
-            for (VuforiaTrackable trackable : allTrackables) {
-                {
-                    if(trackable.getName().equalsIgnoreCase(targetName))
-                    {
-                        if (((VuforiaTrackableDefaultListener) trackable.getListener()).isVisible()) {
-                            targetVisible = true;
-                            telemetry.addData("Visible Target", trackable.getName());
-                            telemetry.update();
-
-                            OpenGLMatrix robotLocationTransform = ((VuforiaTrackableDefaultListener) trackable.getListener()).getUpdatedRobotLocation();
-                            if (robotLocationTransform != null) {
-                                lastLocation = robotLocationTransform;
-                            }
-
-                            break;
-                        }
-                    }
-                }
-
-            }
-
-            if (targetVisible) {
-                // express position (translation) of robot in inches.
-                VectorF translation = lastLocation.getTranslation();
-                telemetry.addData("Pos (in)", "{X, Y, Z} = %.1f, %.1f, %.1f",
-                        translation.get(0) / mmPerInch, translation.get(1) / mmPerInch, translation.get(2) / mmPerInch);
-                // express the rotation of the robot in degrees.
-                Orientation rotation = Orientation.getOrientation(lastLocation, EXTRINSIC, XYZ, DEGREES);
-                telemetry.addData("Rot (deg)", "{Roll, Pitch, Heading} = %.0f, %.0f, %.0f", rotation.firstAngle, rotation.secondAngle, rotation.thirdAngle);
-            } else {
-                telemetry.addData("Visible Target", "none");
-                telemetry.update();
-            }
-
-        }
-        return targetVisible;
-
-    }
     public void stopTracking( VuforiaTrackables targetsUltimateGoal )
     {
         // Disable Tracking when we are done;
         targetsUltimateGoal.deactivate();
     }
+    public  TFObjectDetector getTfod()
+    {
+        return tfod;
+    }
     public  List<VuforiaTrackable> getTrackables()
     {
         return allTrackables;
+    }
+
+
+    public void initVuforia() {
+        int cameraMonitorViewId = robotHardware.getHwMap().appContext.getResources().getIdentifier("cameraMonitorViewId", "id", robotHardware.getHwMap().appContext.getPackageName());
+        parameters = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
+
+        parameters.vuforiaLicenseKey = VUFORIA_KEY;
+        parameters.cameraName = robotHardware.webcam;
+
+        // Make sure extended tracking is disabled for this example.
+        parameters.useExtendedTracking = false;
+
+        //  Instantiate the Vuforia engine
+        vuforia = ClassFactory.getInstance().createVuforia(parameters);
+    }
+
+    /**
+     * Initialize the TensorFlow Object Detection engine.
+     */
+    public void initTfod() {
+        int tfodMonitorViewId = robotHardware.getHwMap().appContext.getResources().getIdentifier(
+                "tfodMonitorViewId", "id", robotHardware.getHwMap().appContext.getPackageName());
+        TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);
+        tfodParameters.minResultConfidence = 0.8f;
+        tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
+        tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABEL_FIRST_ELEMENT, LABEL_SECOND_ELEMENT);
+        if (tfod != null) {
+            tfod.activate();
+        }
+
+    }
+    public boolean isTargetVisible(VuforiaTrackable target,double runForSeconds) {
+
+        ElapsedTime runtime = new ElapsedTime();
+        boolean targetVisible = false;
+        while (runtime.seconds() < runForSeconds) {
+            for (VuforiaTrackable trackable : allTrackables) {
+                if (trackable.getName().equalsIgnoreCase(target.getName())) {
+                    if (((VuforiaTrackableDefaultListener) trackable.getListener()).isVisible()) {
+                        targetVisible = true;
+                        break;
+                    }
+                }
+            }
+            if(targetVisible)
+            {
+                break;
+            }
+        }
+        return targetVisible;
+
+    }
+    public OpenGLMatrix getCurrentLocationFromTarget(VuforiaTrackable target,double runForSeconds) {
+        OpenGLMatrix lastLocation = null;
+        ElapsedTime runtime = new ElapsedTime();
+        boolean targetVisible = false;
+        while (runtime.seconds() < runForSeconds) {
+            for (VuforiaTrackable trackable : allTrackables) {
+                {
+                    if (((VuforiaTrackableDefaultListener) trackable.getListener()).isVisible()
+                            && target.getName().equalsIgnoreCase(trackable.getName())) {
+                        targetVisible = true;
+                        OpenGLMatrix robotLocationTransform = ((VuforiaTrackableDefaultListener) trackable.getListener()).getUpdatedRobotLocation();
+                        if (robotLocationTransform != null) {
+                            lastLocation = robotLocationTransform;
+                        }
+                        break;
+                    }
+                    if(targetVisible)
+                    {
+                        break;
+                    }
+                }
+            }
+
+        }
+        return lastLocation;
+
+    }
+    public VectorF getTranslation(OpenGLMatrix loc ) {
+        VectorF translation = null;
+        // express position (translation) of robot in inches.
+        if(loc !=null)
+        {
+            translation = loc.getTranslation();
+        }
+        return translation;
+
+    }
+    public Orientation getOrientation(OpenGLMatrix loc) {
+        Orientation rotation = null;
+        if(loc !=null) {
+            // express the rotation of the robot in degrees.
+            rotation = Orientation.getOrientation(loc, EXTRINSIC, XYZ, DEGREES);
+        }
+        return rotation;
+
+    }
+    public String checkStarterStack(double runForSeconds) {
+        ElapsedTime runtime = new ElapsedTime();
+        String stack = "NONE";
+        if (tfod != null) {
+            while (runtime.seconds() < runForSeconds) {
+                // getUpdatedRecognitions() will return null if no new information is available since
+                // the last time that call was made.
+                List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
+                if (updatedRecognitions != null) {
+                    // step through the list of recognitions and display boundary info.
+                    for (Recognition recognition : updatedRecognitions) {
+                       if (recognition.getLabel().equalsIgnoreCase("Single")) {
+                            stack = "SINGLE";
+                            break;
+                        } else if (recognition.getLabel().equalsIgnoreCase("Quad"))
+                        {
+
+                            stack = "QUAD";
+                            break;
+                        }
+                    }
+
+                }
+            }
+        }
+
+        return stack;
     }
 }
