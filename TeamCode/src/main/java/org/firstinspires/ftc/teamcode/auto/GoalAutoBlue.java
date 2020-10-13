@@ -17,7 +17,7 @@ import org.firstinspires.ftc.teamcode.assembly.VisualCortex;
 import org.firstinspires.ftc.teamcode.assembly.UltimateBot;
 
 import java.util.List;
-import android.util.Log;
+
 
 
 
@@ -85,7 +85,6 @@ public class GoalAutoBlue extends LinearOpMode {
          */
 
         telemetry.addData("Starting Autonomous ", "");
-        Log.d("GoalAutoBlue", "Starting Autonomous");
 
 
         //preparation();
