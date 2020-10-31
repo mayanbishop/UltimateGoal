@@ -1,3 +1,5 @@
+import java.text.SimpleDateFormat
+
 //
 // build.gradle in TeamCode
 //
@@ -17,7 +19,14 @@ apply from: '../build.common.gradle'
 repositories {
     maven { url = "https://dl.bintray.com/first-tech-challenge/ftcsdk/" }
 }
+android {
 
+     packagingOptions {
+        exclude 'lib/arm64-v8a/libc++_shared.so'
+    }
+}
 dependencies {
     annotationProcessor files('lib/OpModeAnnotationProcessor.jar')
+    implementation project(path: ':sdk')
+
 }
