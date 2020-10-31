@@ -16,6 +16,7 @@ import org.firstinspires.ftc.teamcode.assembly.SensorNavigation;
 import org.firstinspires.ftc.teamcode.assembly.VisualCortex;
 import org.firstinspires.ftc.teamcode.assembly.UltimateBot;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -23,7 +24,7 @@ import java.util.List;
 
 @Autonomous(name = "GoalAutoBlue", group = "Qualifier")
 public class GoalAutoBlue extends LinearOpMode {
-   
+
     //Encoder Constants
     final double COUNTS_PER_MOTOR_REV    = 1120 ;    // eg: TETRIX Motor Encoder
     final double DRIVE_GEAR_REDUCTION = 0.5;
@@ -38,19 +39,18 @@ public class GoalAutoBlue extends LinearOpMode {
     private static final float mmTargetHeight = (6) * mmPerInch;          // the height of the center of the target image above the floor
 
     // Servo Positions
-    
+
 
     //Movement Constants
     final double WHEEL_SPEED = 1;
     final double SIDE_SHIFT = 6;
-   
+
     //Creating a  robot object
     UltimateBot ultimateBot = new UltimateBot();
     VisualCortex vcortex = null;
     SensorNavigation nav = null;
     ChassisAssembly chassis = null;;
     List<VuforiaTrackable> allTrackables = null;
-    TFObjectDetector tfod = null;
 
 
     //Time
@@ -58,37 +58,32 @@ public class GoalAutoBlue extends LinearOpMode {
     int numRings = 0;
 
     @Override public void runOpMode() {
-        
+
         //Intialize Robot
         ultimateBot.initRobot(hardwareMap);
         vcortex = ultimateBot.getVisualCortex();
         nav = ultimateBot.getNavigation();
         chassis = ultimateBot.getChassisAssembly();;
-        allTrackables = vcortex.getTrackables();
-        tfod =  vcortex.getTfod();
+        allTrackables = vcortex.getAllTrackables();
+
         //Wait for Start
         telemetry.addData("Waiting for start", "");
         VuforiaTrackable blueTower = allTrackables.get(0);
-        int[] stackArray = {0, 0, 0};
+
+        ArrayList<Integer> stackArrayList=new ArrayList<Integer>();
+
         while (!opModeIsActive() && !isStopRequested())
         {
             telemetry.addData("Scanning stack ", "..Waiting for Start");
             telemetry.update();
             int stack = vcortex.checkStarterStack(3);
-            if(stack==0)
+            stackArrayList.add(new Integer(stack));
+            // if there are more than 10 scans, throw away the first five scans from the list
+            if(stackArrayList.size() > 10)
             {
-                stackArray[0] = stackArray[0] + 1;
-            }
-            else if(stack==1)
-            {
-                stackArray[1] = stackArray[1] + 1;
-            }
-            else if(stack==4)
-            {
-                stackArray[2] = stackArray[2] + 1;
+                stackArrayList.subList(0, 5).clear();
             }
         }
-
 
         //waitForStart();
 
@@ -97,7 +92,7 @@ public class GoalAutoBlue extends LinearOpMode {
          */
 
         telemetry.addData("Starting Autonomous ", "");
-        String recognizedStack =   getStackScanResult(stackArray);
+        String zone =   getZone(stackArrayList, 10);
         sleep(2000);
 
 
@@ -105,43 +100,35 @@ public class GoalAutoBlue extends LinearOpMode {
         //alignWithTarget(blueTower);
     }
 
-    public String  getStackScanResult(int stack[])
+    public String  getZone(ArrayList<Integer> stack, int numOfScans)
     {
-        int highestValue;
-        int index = 0;
-        int i = 0;
-        highestValue = stack[0];
-        int totalTries = 0;
-        String stackScanned = "NONE";
-        while(i<3)
-        {
-            totalTries = totalTries + stack[i];
-            if(highestValue < stack[i])
-            {
-                highestValue = stack[i];
-                index = i;
-            }
-            i++;
-        }
-        telemetry.addData("Score  is " + highestValue + "out of " + totalTries , "") ;
+        int totalTries = stack.size();
+        String zone = "A";
+        int singleCount= 0;
+        int noneCount = 0;
+        int quadCount = 0;
 
-        if(index==0)
+        for(int i= totalTries- 1; i >= totalTries - numOfScans ; i--)
         {
-            telemetry.addData("Stack has  ", "None");
-            stackScanned ="NONE";
+            if(stack.get(i) ==0) { noneCount++;  }
+            else if(stack.get(i) ==1)  { singleCount++;   }
+            else if(stack.get(i) ==4)  { quadCount++;    }
+
         }
-        else if(index==1)
-        {
-            telemetry.addData("Stack has  ", "One");
-            stackScanned ="ONE";
+        if( noneCount >= singleCount && noneCount >= quadCount) {
+            telemetry.addData("No Ring Score  is " + noneCount + "out of last " + numOfScans , " - Zone A") ;
+            zone ="A";
         }
-        else
-        {
-            telemetry.addData("Stack has  ", "Four");
-            stackScanned ="QUAD";
+        else if (singleCount >= noneCount && singleCount >= quadCount) {
+            telemetry.addData("Single Ring Score  is " + singleCount + "out of last " + numOfScans , " B") ;
+            zone ="B";
+        }
+        else {
+            telemetry.addData("Quad Rings Score  is " + singleCount + "out of last " + numOfScans , " C") ;
+            zone ="C";
         }
         telemetry.update();
-        return stackScanned;
+        return zone;
 
     }
     public void preparation()
@@ -156,9 +143,6 @@ public class GoalAutoBlue extends LinearOpMode {
 
 
     }
-
-
-
 
     public void alignWithTarget(VuforiaTrackable target)
     {
