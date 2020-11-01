@@ -20,7 +20,7 @@ public class UltimateBot
         robotHardware = new RobotHardware(hwMap);
         buildChassisAssembly();
         buildNavigation();
-        initializeVuforiaAndTensorFlow();
+
 
     }
     public void buildChassisAssembly () {
@@ -35,7 +35,7 @@ public class UltimateBot
     {
         this.navigation = new SensorNavigation(robotHardware);
     }
-    private void initializeVuforiaAndTensorFlow()
+    public void initializeVuforiaAndTensorFlow()
     {
         this.vuforia_tf = new VisualCortex(robotHardware);
         vuforia_tf.initVuforia();

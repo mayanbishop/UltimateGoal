@@ -141,11 +141,10 @@ public class VisualCortex {
     {
         return tfod;
     }
-    public  List<VuforiaTrackable> getTrackables()
+    public  List<VuforiaTrackable> getAllTrackables()
     {
         return allTrackables;
     }
-
 
     public void initVuforia() {
         int cameraMonitorViewId = robotHardware.getHwMap().appContext.getResources().getIdentifier("cameraMonitorViewId", "id", robotHardware.getHwMap().appContext.getPackageName());
@@ -243,9 +242,9 @@ public class VisualCortex {
         return rotation;
 
     }
-    public String checkStarterStack(double runForSeconds) {
+    public int checkStarterStack(double runForSeconds) {
         ElapsedTime runtime = new ElapsedTime();
-        String stack = "NONE";
+        int stack = 0;
         if (tfod != null) {
             while (runtime.seconds() < runForSeconds) {
                 // getUpdatedRecognitions() will return null if no new information is available since
@@ -255,12 +254,11 @@ public class VisualCortex {
                     // step through the list of recognitions and display boundary info.
                     for (Recognition recognition : updatedRecognitions) {
                        if (recognition.getLabel().equalsIgnoreCase("Single")) {
-                            stack = "SINGLE";
+                            stack = 1;
                             break;
                         } else if (recognition.getLabel().equalsIgnoreCase("Quad"))
                         {
-
-                            stack = "QUAD";
+                            stack = 4;
                             break;
                         }
                     }
