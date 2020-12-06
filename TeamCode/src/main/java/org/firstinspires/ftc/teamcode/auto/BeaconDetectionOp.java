@@ -37,24 +37,68 @@ public class BeaconDetectionOp extends LinearOpMode  {
     telemetry.addData("size", size ); //Display it on telemetry
     telemetry.addData("height", height ); //Display it on telemetry
     telemetry.addData("width", width ); //Display it on telemetry
+    telemetry.update();
+
     int startRow = 0;
     int endRow = 0;
     int startColumn = 0;
-
+    int endColumn = 0;
+    double redValue = 0;
+    double greenValue = 0;
+    double blueValue = 0;
     for (int i=0; i < width; i++)
     {
       for (int j=0; j < height; j++)
       {
+        pixel = frame.get(i,j);
+        if (pixel != null && pixel.length > 0)
+        {
+          redValue = pixel[0];
+          greenValue = pixel[1];
+          blueValue= pixel[2];
+          if (redValue > 150 && greenValue > 50 && blueValue < 50) {
+            if ( startRow <= 0)
+              startRow = i;
+            if (startColumn <= 0)
+              startColumn = j;
 
+            if (endRow < i)
+              endRow = i;
+
+            if (endColumn < j)
+              endColumn = j;
+          }
+        }
+        else
+        {
+          telemetry.addData("Pixel Null at",  i );
+          telemetry.addData(" ",  j );
+          telemetry.update();
+        }
       }
     }
 
-    for (int i = 0; i< pixel.length; i++)
-    {
-      telemetry.addData("Pixel ",  i );
-      telemetry.addData(" ",  pixel[i] ); //Display it on telemetry
-    }
+      double ringWidth = endRow - startRow;
+      double ringHeight = endColumn - startColumn;
 
+      double ratio =  0;
+      if (ringHeight > 0.0)
+        ratio = ringWidth/ringHeight;
+
+      int numRings = 0;
+      if (ratio > 1)
+       numRings = 4;
+      else if (ratio > 0.1)
+        numRings = 1;
+      else
+        numRings = 0;
+
+      telemetry.addData("Start Row ",  startRow );
+      telemetry.addData("End Row ",  endRow ); //Display it on telemetry
+      telemetry.addData("Start Column ",  startColumn );
+      telemetry.addData("End Column ",  endColumn );
+      telemetry.addData("Ratio ",  ratio );
+      telemetry.addData("Number of Rings ",  numRings );
     telemetry.update();
     sleep(100000);
     /*
