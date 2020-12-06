@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.auto;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.robotcontroller.internal.FtcRobotControllerActivity;
@@ -12,14 +11,13 @@ import ftc.vision.BeaconColorResult;
 import ftc.vision.FrameGrabber;
 import ftc.vision.ImageProcessorResult;
 
-@Disabled
-@Autonomous(name = "BeaconDetection", group = "Qualifier")
-public class BeaconDetectionOp extends LinearOpMode  {
+@Autonomous(name = "RingDetection", group = "Qualifier")
+public class RingDetectionOp extends LinearOpMode  {
 
   @Override
   public void runOpMode() throws InterruptedException {
     waitForStart();
-    /* frameGrabber = FtcRobotControllerActivity.frameGrabber; //Get the frameGrabber
+    FrameGrabber frameGrabber = FtcRobotControllerActivity.frameGrabber; //Get the frameGrabber
 
     frameGrabber.grabSingleFrame(); //Tell it to grab a frame
     while (!frameGrabber.isResultReady()) { //Wait for the result
@@ -103,17 +101,7 @@ public class BeaconDetectionOp extends LinearOpMode  {
       telemetry.addData("Number of Rings ",  numRings );
     telemetry.update();
     sleep(100000);
-    /*
-    BeaconColorResult result = (BeaconColorResult) imageProcessorResult.getResult();
 
-    BeaconColorResult.BeaconColor leftColor = result.getLeftColor();
-    BeaconColorResult.BeaconColor rightColor = result.getRightColor();
 
-    telemetry.addData("Result", result); //Display it on telemetry
-    telemetry.update();
-    //wait before quitting (quitting clears telemetry)
-    Thread.sleep(5000);*/
-
-   */
   }
 }
