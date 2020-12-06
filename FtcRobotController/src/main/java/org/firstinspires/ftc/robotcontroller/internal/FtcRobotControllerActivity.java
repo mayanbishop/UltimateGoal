@@ -125,6 +125,7 @@ import org.firstinspires.ftc.robotserver.internal.programmingmode.ProgrammingMod
 import org.firstinspires.inspection.RcInspectionActivity;
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase;
+import org.opencv.android.JavaCamera2View;
 import org.opencv.android.JavaCameraView;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
@@ -194,12 +195,12 @@ public class FtcRobotControllerActivity extends Activity
 
     //manages getting one frame at a time
     public static FrameGrabber frameGrabber = null;
-
+/*
     //set up the frameGrabber
     void myOnCreate(){
       getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
-      cameraBridgeViewBase = (JavaCameraView) findViewById(R.id.show_camera_activity_java_surface_view);
+      cameraBridgeViewBase = (JavaCamera2View) findViewById(R.id.show_camera_activity_java_surface_view);
       frameGrabber = new FrameGrabber(cameraBridgeViewBase, FRAME_WIDTH_REQUEST, FRAME_HEIGHT_REQUEST);
       frameGrabber.setSaveImages(true);
     }
@@ -276,7 +277,7 @@ public class FtcRobotControllerActivity extends Activity
         }
       }
     };
-
+*/
     ////////////// END VISION PROCESSING CODE //////////////
 
     protected class RobotRestarter implements Restarter {
@@ -401,7 +402,7 @@ public class FtcRobotControllerActivity extends Activity
 
 
     ////////////// START VISION PROCESSING CODE //////////////
-    myOnCreate();
+    //myOnCreate();
     ////////////// END VISION PROCESSING CODE //////////////
 
 
@@ -536,7 +537,7 @@ public class FtcRobotControllerActivity extends Activity
   protected void onResume() {
     super.onResume();
     ////////////// START VISION PROCESSING CODE //////////////
-    myOnResume();
+    //myOnResume();
     ////////////// END VISION PROCESSING CODE //////////////
     RobotLog.vv(TAG, "onResume()");
   }
@@ -545,7 +546,7 @@ public class FtcRobotControllerActivity extends Activity
   protected void onPause() {
     super.onPause();
     ////////////// START VISION PROCESSING CODE //////////////
-    myOnPause();
+    //myOnPause();
     ////////////// END VISION PROCESSING CODE //////////////
     RobotLog.vv(TAG, "onPause()");
   }
@@ -562,7 +563,7 @@ public class FtcRobotControllerActivity extends Activity
   protected void onDestroy() {
     super.onDestroy();
     ////////////// START VISION PROCESSING CODE //////////////
-    myOnDestroy();
+    //myOnDestroy();
     ////////////// END VISION PROCESSING CODE //////////////
     RobotLog.vv(TAG, "onDestroy()");
 
@@ -636,7 +637,7 @@ public class FtcRobotControllerActivity extends Activity
     super.onWindowFocusChanged(hasFocus);
 
     ////////////// START VISION PROCESSING CODE //////////////
-    myOnWindowFocusChanged(hasFocus);
+   // myOnWindowFocusChanged(hasFocus);
     ////////////// END VISION PROCESSING CODE //////////////
 
     if (hasFocus) {
