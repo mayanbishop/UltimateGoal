@@ -106,6 +106,9 @@ public class FrameGrabber implements CameraBridgeViewBase.CvCameraViewListener2 
     return result;
   }
 
+  public Mat getFrame(){
+    return frame;
+  }
   private void processFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame){
     if(imageProcessor == null){
       return;
@@ -118,11 +121,12 @@ public class FrameGrabber implements CameraBridgeViewBase.CvCameraViewListener2 
 
     //get the rgb alpha image
     tmp1 = inputFrame.rgba();
-    ImageUtil.rotate(tmp1, frame, 90);
+
+    /*ImageUtil.rotate(tmp1, frame, 90);
 
     //process the image using the provided imageProcessor
-    result = imageProcessor.process(frameTime, frame, saveImages); //process
-    frame = result.getFrame(); //get the output frame
+   // result = imageProcessor.process(frameTime, frame, saveImages); //process
+   // frame = result.getFrame(); //get the output frame
     Log.i(TAG, "Result: " + result);
 
     Log.i(TAG, "frame size: " + frame.size());
@@ -143,6 +147,8 @@ public class FrameGrabber implements CameraBridgeViewBase.CvCameraViewListener2 
       Log.i(TAG, "ESTIMATED AVERAGE FPS: " + 1000.0 * 1000000.0 * loopCount / totalTime);
     }
     loopTimer = now;
+    */
+    frame = tmp1;
   }
 
   @Override
@@ -163,6 +169,7 @@ public class FrameGrabber implements CameraBridgeViewBase.CvCameraViewListener2 
   public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
     if(mode == FrameGrabberMode.SINGLE){ //if a single frame was requested
       processFrame(inputFrame); //process it
+     // frame = inputFrame.rgba();
       stopFrameGrabber(); //and stop grabbing
       resultReady = true;
     }
