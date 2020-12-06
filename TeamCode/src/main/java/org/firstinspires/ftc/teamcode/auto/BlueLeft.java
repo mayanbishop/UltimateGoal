@@ -4,6 +4,8 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
+
+import org.firstinspires.ftc.robotcontroller.internal.FtcRobotControllerActivity;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
 import org.firstinspires.ftc.teamcode.assembly.ChassisAssembly;
@@ -17,9 +19,11 @@ import org.firstinspires.ftc.robotcore.external.navigation.Acceleration;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+
 
 
 @Autonomous(name = "BlueLeft", group = "Qualifier")
@@ -106,6 +110,7 @@ public class BlueLeft extends LinearOpMode
         ultimateBot.getShooterAssembly().returnPusher();
         ultimateBot.getWobbleAssembly().closeGripper();
 
+        /* use this for using TF for ring detection
         while (!opModeIsActive() && !isStopRequested())
         {
             telemetry.addData("Scanning stack ", "..Waiting for Start");
@@ -117,9 +122,11 @@ public class BlueLeft extends LinearOpMode
             {
                 stackArrayList.subList(0, 5).clear();
             }
-        }
+        }*/
+
         //Not needed as we scan during Init
-        //waitForStart();
+        waitForStart();
+
 
         rampSpeedEncoderDrive(1.0, 5, 5);
         turnToAngle(1.0, -11, 1);
@@ -386,11 +393,12 @@ public class BlueLeft extends LinearOpMode
         return String.format(Locale.getDefault(), "%.1f", AngleUnit.DEGREES.normalize(degrees));
     }
 
-    public String  getZone(ArrayList<Integer> stack, int numOfScans)
+
+    public int  getZoneUsingTF(ArrayList<Integer> stack, int numOfScans)
     {
         int totalTries = stack.size();
         telemetry.addData("totalTries ", totalTries);
-        String zone = "A";
+        int numRings = 0;
         int singleCount= 0;
         int noneCount = 0;
         int quadCount = 0;
@@ -418,18 +426,18 @@ public class BlueLeft extends LinearOpMode
         telemetry.update();
         if( noneCount >= singleCount && noneCount >= quadCount) {
             telemetry.addData("No Ring Score  is " + noneCount + " out of last " + scansCount , "  Zone A") ;
-            zone ="A";
+            numRings  =4;
         }
         else if (singleCount >= noneCount && singleCount >= quadCount) {
             telemetry.addData("Single Ring Score  is " + singleCount + " out of last " + scansCount , " Zone B") ;
-            zone ="B";
+            numRings =1;
         }
         else {
             telemetry.addData("Quad Rings Score  is " + quadCount + " out of last " + scansCount , "Zone C") ;
-            zone ="C";
+            numRings = 1;
         }
         telemetry.update();
-        return zone;
+        return numRings;
 
     }
 

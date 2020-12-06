@@ -123,18 +123,12 @@ import org.firstinspires.ftc.robotcore.internal.ui.UILocation;
 import org.firstinspires.ftc.robotcore.internal.webserver.RobotControllerWebInfo;
 import org.firstinspires.ftc.robotserver.internal.programmingmode.ProgrammingModeManager;
 import org.firstinspires.inspection.RcInspectionActivity;
-import org.opencv.android.BaseLoaderCallback;
-import org.opencv.android.CameraBridgeViewBase;
-import org.opencv.android.JavaCamera2View;
-import org.opencv.android.JavaCameraView;
-import org.opencv.android.LoaderCallbackInterface;
-import org.opencv.android.OpenCVLoader;
+
 
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import ftc.vision.FrameGrabber;
 
 
 @SuppressWarnings("WeakerAccess")
@@ -190,11 +184,6 @@ public class FtcRobotControllerActivity extends Activity
     static final int FRAME_WIDTH_REQUEST = 176;
     static final int FRAME_HEIGHT_REQUEST = 144;
 
-    // Loads camera view of OpenCV for us to use. This lets us see using OpenCV
-    private CameraBridgeViewBase cameraBridgeViewBase;
-
-    //manages getting one frame at a time
-    public static FrameGrabber frameGrabber = null;
 /*
     //set up the frameGrabber
     void myOnCreate(){

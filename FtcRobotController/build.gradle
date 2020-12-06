@@ -22,9 +22,6 @@ android {
     }
 }
 
-dependencies {
-    implementation project(path: ':sdk')
-}
 
 repositories {
     maven { url = "https://dl.bintray.com/first-tech-challenge/ftcsdk/" }
