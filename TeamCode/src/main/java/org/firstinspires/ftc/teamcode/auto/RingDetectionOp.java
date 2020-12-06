@@ -7,9 +7,7 @@ import org.firstinspires.ftc.robotcontroller.internal.FtcRobotControllerActivity
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
 
-import ftc.vision.BeaconColorResult;
 import ftc.vision.FrameGrabber;
-import ftc.vision.ImageProcessorResult;
 
 @Autonomous(name = "RingDetection", group = "Qualifier")
 public class RingDetectionOp extends LinearOpMode  {

@@ -35,19 +35,11 @@ public class FrameGrabber implements CameraBridgeViewBase.CvCameraViewListener2 
 
   private boolean resultReady = false;
 
-  //objects to run and store the result
-  private ImageProcessor imageProcessor = null;
-  private ImageProcessorResult result = null;
-
   //timing variables
   private long totalTime = 0, loopCount = 0, loopTimer = 0;
 
   public boolean isSaveImages() {
     return saveImages;
-  }
-
-  public ImageProcessor getImageProcessor() {
-    return imageProcessor;
   }
 
   public FrameGrabberMode getMode() {
@@ -58,9 +50,6 @@ public class FrameGrabber implements CameraBridgeViewBase.CvCameraViewListener2 
     this.saveImages = saveImages;
   }
 
-  public void setImageProcessor(ImageProcessor imageProcessor) {
-    this.imageProcessor = imageProcessor;
-  }
 
   public FrameGrabber(CameraBridgeViewBase cameraBridgeViewBase, int frameWidthRequest, int frameHeightRequest) {
     cameraBridgeViewBase.setVisibility(SurfaceView.VISIBLE);
@@ -71,17 +60,8 @@ public class FrameGrabber implements CameraBridgeViewBase.CvCameraViewListener2 
     cameraBridgeViewBase.setCvCameraViewListener(this);
   }
 
-  private boolean isImageProcessorNull(){
-    if(imageProcessor == null) {
-      Log.e(TAG, "imageProcessor is null! Call setImageProcessor() to set it.");
-      return true;
-    } else {
-      return false;
-    }
-  }
 
   public void grabSingleFrame(){
-    if(isImageProcessorNull()) return;
     mode = FrameGrabberMode.SINGLE;
     resultReady = false;
   }
@@ -102,17 +82,13 @@ public class FrameGrabber implements CameraBridgeViewBase.CvCameraViewListener2 
   public boolean isResultReady(){
     return resultReady;
   }
-  public ImageProcessorResult getResult(){
-    return result;
-  }
+
 
   public Mat getFrame(){
     return frame;
   }
   private void processFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame){
-    if(imageProcessor == null){
-      return;
-    }
+
     //start the loop timer
     if(mode == FrameGrabberMode.SINGLE){
       loopTimer = System.nanoTime();
@@ -169,7 +145,6 @@ public class FrameGrabber implements CameraBridgeViewBase.CvCameraViewListener2 
   public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
     if(mode == FrameGrabberMode.SINGLE){ //if a single frame was requested
       processFrame(inputFrame); //process it
-     // frame = inputFrame.rgba();
       stopFrameGrabber(); //and stop grabbing
       resultReady = true;
     }
