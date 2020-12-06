@@ -13,6 +13,7 @@ import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.TouchSensor;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 
@@ -24,6 +25,18 @@ public class RobotHardware
     public DcMotor frontRightWheel = null;
     public DcMotor backLeftWheel = null;
     public DcMotor backRightWheel = null;
+
+    public DcMotor intaker = null;
+    public DcMotor lift = null;
+    public DcMotor shooter = null;
+    public DcMotor arm = null;
+
+    public Servo pusher = null;
+    public CRServo guideWheel = null;
+    public Servo shooterAngleServo = null;
+    public Servo gripper = null;
+    public Servo door = null;
+
 
     //Webcam
     public WebcamName webcam = null;
@@ -38,6 +51,12 @@ public class RobotHardware
 
     Rev2mDistanceSensor backLaser = null;
     Rev2mDistanceSensor frontLaser = null;
+
+    //Touch Sensors
+    public TouchSensor bottomTouch = null;
+    public TouchSensor topTouch = null;
+    public TouchSensor armReturn = null;
+    public TouchSensor grabTouch = null;
 
     //Adding the Hardware Map
     private HardwareMap hwMap  = null;
@@ -62,6 +81,32 @@ public class RobotHardware
         frontRightWheel.setZeroPowerBehavior((DcMotor.ZeroPowerBehavior.BRAKE));
         backRightWheel.setZeroPowerBehavior((DcMotor.ZeroPowerBehavior.BRAKE));
 
+        intaker = hwMap.get(DcMotor.class, "intaker");
+        intaker.setDirection(DcMotor.Direction.FORWARD);
+        intaker.setZeroPowerBehavior((DcMotor.ZeroPowerBehavior.FLOAT));
+
+        lift = hwMap.get(DcMotor.class, "lift");
+        lift.setDirection(DcMotor.Direction.REVERSE);
+        lift.setZeroPowerBehavior((DcMotor.ZeroPowerBehavior.BRAKE));
+
+        shooter = hwMap.get(DcMotor.class, "shooter");
+        shooter.setDirection(DcMotor.Direction.FORWARD);
+        shooter.setZeroPowerBehavior((DcMotor.ZeroPowerBehavior.FLOAT));
+
+        arm = hwMap.get(DcMotor.class, "arm");
+        arm.setDirection(DcMotor.Direction.FORWARD);
+        arm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        pusher = hwMap.get(Servo.class, "pusher");
+        guideWheel = hwMap.get(CRServo.class, "guideWheel");
+        shooterAngleServo = hwMap.get(Servo.class, "shooterAngleServo");
+        gripper = hwMap.get(Servo.class, "gripper");
+        door = hwMap.get(Servo.class, "door");
+
+        bottomTouch = hwMap.get(TouchSensor.class, "bottomTouch");
+        topTouch = hwMap.get(TouchSensor.class, "topTouch");
+        armReturn = hwMap.get(TouchSensor.class, "armReturn");
+        grabTouch = hwMap.get(TouchSensor.class, "grabTouch");
 
         webcam = hwMap.get(WebcamName.class, "webcam");
         imu = hwMap.get(BNO055IMU.class, "imu");
@@ -77,8 +122,6 @@ public class RobotHardware
 */
 
     }
-
-
     public HardwareMap getHwMap() {
         return hwMap;
     }
