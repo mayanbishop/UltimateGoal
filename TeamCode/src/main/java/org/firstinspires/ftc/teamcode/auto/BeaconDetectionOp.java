@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.auto;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.robotcontroller.internal.FtcRobotControllerActivity;
@@ -11,13 +12,14 @@ import ftc.vision.BeaconColorResult;
 import ftc.vision.FrameGrabber;
 import ftc.vision.ImageProcessorResult;
 
+@Disabled
 @Autonomous(name = "BeaconDetection", group = "Qualifier")
 public class BeaconDetectionOp extends LinearOpMode  {
 
   @Override
   public void runOpMode() throws InterruptedException {
     waitForStart();
-    FrameGrabber frameGrabber = FtcRobotControllerActivity.frameGrabber; //Get the frameGrabber
+    /* frameGrabber = FtcRobotControllerActivity.frameGrabber; //Get the frameGrabber
 
     frameGrabber.grabSingleFrame(); //Tell it to grab a frame
     while (!frameGrabber.isResultReady()) { //Wait for the result
@@ -112,6 +114,6 @@ public class BeaconDetectionOp extends LinearOpMode  {
     //wait before quitting (quitting clears telemetry)
     Thread.sleep(5000);*/
 
-
+   */
   }
 }
