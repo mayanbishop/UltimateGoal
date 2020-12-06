@@ -133,14 +133,13 @@ import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import ftc.vision.BeaconProcessor;
 import ftc.vision.FrameGrabber;
 
 @SuppressWarnings("WeakerAccess")
 public class FtcRobotControllerActivity extends Activity
   {
 
-  public static final String TAG = "RCActivity";
+      public static final String TAG = "RCActivity";
   public String getTag() { return TAG; }
 
   private static final int REQUEST_CONFIG_WIFI_CHANNEL = 1;
@@ -201,7 +200,6 @@ public class FtcRobotControllerActivity extends Activity
 
       cameraBridgeViewBase = (JavaCameraView) findViewById(R.id.show_camera_activity_java_surface_view);
       frameGrabber = new FrameGrabber(cameraBridgeViewBase, FRAME_WIDTH_REQUEST, FRAME_HEIGHT_REQUEST);
-      frameGrabber.setImageProcessor(new BeaconProcessor());
       frameGrabber.setSaveImages(true);
     }
 
@@ -215,8 +213,7 @@ public class FtcRobotControllerActivity extends Activity
           e.printStackTrace();
         }
       }
-      Object result = frameGrabber.getResult();
-      ((TextView)findViewById(R.id.resultText)).setText(result.toString());
+
     }
 
     void myOnWindowFocusChanged(boolean hasFocus){
