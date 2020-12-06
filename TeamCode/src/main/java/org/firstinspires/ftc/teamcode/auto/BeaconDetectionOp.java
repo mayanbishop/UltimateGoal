@@ -4,6 +4,9 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.robotcontroller.internal.FtcRobotControllerActivity;
+import org.opencv.core.Mat;
+import org.opencv.core.Size;
+
 import ftc.vision.BeaconColorResult;
 import ftc.vision.FrameGrabber;
 import ftc.vision.ImageProcessorResult;
@@ -22,7 +25,39 @@ public class BeaconDetectionOp extends LinearOpMode  {
     }
 
     //Get the result
-    ImageProcessorResult imageProcessorResult = frameGrabber.getResult();
+   //ImageProcessorResult imageProcessorResult = frameGrabber.getResult();
+    //Mat frame = imageProcessorResult.getFrame();
+    Mat frame = frameGrabber.getFrame();
+
+    double[] pixel;
+    Size size = frame.size();
+    double height = size.height;
+    double width = size.width;
+    //pixel = frame.get(100,100);
+    telemetry.addData("size", size ); //Display it on telemetry
+    telemetry.addData("height", height ); //Display it on telemetry
+    telemetry.addData("width", width ); //Display it on telemetry
+    int startRow = 0;
+    int endRow = 0;
+    int startColumn = 0;
+
+    for (int i=0; i < width; i++)
+    {
+      for (int j=0; j < height; j++)
+      {
+
+      }
+    }
+
+    for (int i = 0; i< pixel.length; i++)
+    {
+      telemetry.addData("Pixel ",  i );
+      telemetry.addData(" ",  pixel[i] ); //Display it on telemetry
+    }
+
+    telemetry.update();
+    sleep(100000);
+    /*
     BeaconColorResult result = (BeaconColorResult) imageProcessorResult.getResult();
 
     BeaconColorResult.BeaconColor leftColor = result.getLeftColor();
@@ -31,7 +66,7 @@ public class BeaconDetectionOp extends LinearOpMode  {
     telemetry.addData("Result", result); //Display it on telemetry
     telemetry.update();
     //wait before quitting (quitting clears telemetry)
-    Thread.sleep(5000);
+    Thread.sleep(5000);*/
 
 
   }
