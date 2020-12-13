@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.auto;
+package org.firstinspires.ftc.teamcode.test;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -14,8 +14,8 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 
 import org.openftc.easyopencv.OpenCvPipeline;
 
-@Autonomous(name = "RingWebcam", group = "Qualifier")
-public class RingWebcam extends LinearOpMode
+@Autonomous(name = "TestRingDetectionWebCam", group = "Qualifier")
+public class TestRingDetectionWebCam extends LinearOpMode
 {
     OpenCvCamera webCam;
     RingDeterminationPipeline pipeline;

@@ -5,7 +5,8 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcontroller.internal.FtcRobotControllerActivity;
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
 import org.firstinspires.ftc.teamcode.assembly.ChassisAssembly;
@@ -20,7 +21,13 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 
-import java.util.ArrayList;
+import org.opencv.core.Mat;
+import org.opencv.core.Size;
+import org.openftc.easyopencv.OpenCvCamera;
+import org.openftc.easyopencv.OpenCvCameraFactory;
+import org.openftc.easyopencv.OpenCvCameraRotation;
+import org.openftc.easyopencv.OpenCvPipeline;
+
 import java.util.List;
 import java.util.Locale;
 
@@ -65,7 +72,10 @@ public class BlueLeft extends LinearOpMode
 
     //Time
     ElapsedTime runtime = new ElapsedTime();
-    int numRings = 0;
+
+    OpenCvCamera webCam;
+    RingDeterminationPipeline pipeline;
+    int numRings;
 
     @Override public void runOpMode()
     {
@@ -96,21 +106,35 @@ public class BlueLeft extends LinearOpMode
         telemetry.update();
 
         //Initilize Vuforia and tensor flow
-        ultimateBot.initializeVuforiaAndTensorFlow();
-        ultimateBot.loadVuforiaTrackables();
+        /* ultimateBot.initializeVuforiaAndTensorFlow();  //uncomment this when vuforia and tflod is needed
+         ultimateBot.loadVuforiaTrackables();
+         vcortex = ultimateBot.getVisualCortex();
+        allTrackables = vcortex.getAllTrackables();
+        */
+        // Initialize Easy CV for ring detection using webcam
+        int cameraMonitorViewId = ultimateBot.getRobotHardware().getHwMap().appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+        webCam = OpenCvCameraFactory.getInstance().createWebcam( ultimateBot.getRobotHardware().getHwMap().get(WebcamName.class, "webcam"), cameraMonitorViewId);
+        pipeline = new RingDeterminationPipeline(telemetry);
+        webCam.setPipeline(pipeline);
+        webCam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
+        {
+            @Override
+            public void onOpened()
+            {
+                webCam.startStreaming(320,240, OpenCvCameraRotation.UPSIDE_DOWN);
+            }
+        });
 
-        vcortex = ultimateBot.getVisualCortex();
-        //allTrackables = vcortex.getAllTrackables();
 
         //Wait for Start
         telemetry.addData("Waiting for start", "");
-        ArrayList<Integer> stackArrayList=new ArrayList<Integer>();
 
         ultimateBot.getShooterAssembly().autoPowerShotAng();
         ultimateBot.getShooterAssembly().returnPusher();
         ultimateBot.getWobbleAssembly().closeGripper();
 
         /* use this for using TF for ring detection
+        ArrayList<Integer> stackArrayList=new ArrayList<Integer>();
         while (!opModeIsActive() && !isStopRequested())
         {
             telemetry.addData("Scanning stack ", "..Waiting for Start");
@@ -124,9 +148,11 @@ public class BlueLeft extends LinearOpMode
             }
         }*/
 
-        //Not needed as we scan during Init
-        waitForStart();
 
+        waitForStart();
+        numRings = pipeline.getNumRings();
+        telemetry.addData("numRings", numRings);
+        telemetry.update();
 
         rampSpeedEncoderDrive(1.0, 5, 5);
         turnToAngle(1.0, -11, 1);
@@ -169,107 +195,99 @@ public class BlueLeft extends LinearOpMode
         ultimateBot.getShooterAssembly().stopShoot();
 
         //stack of 0
-        /*
-        turnToAngle(1.0, 0, 1);
-        rampSpeedEncoderDrive(1.0, 44, 5);
-        turnToAngle(1.0, -90, 3);
+        if(numRings == 0) {
+            turnToAngle(1.0, 0, 1);
+            rampSpeedEncoderDrive(1.0, 44, 5);
+            turnToAngle(1.0, -90, 3);
 
-        while(opModeIsActive() &&  ultimateBot.getRobotHardware().grabTouch.isPressed() == false)
-        {
-            ultimateBot.getWobbleAssembly().moveArm(-0.5);
+            while (opModeIsActive() && ultimateBot.getRobotHardware().grabTouch.isPressed() == false) {
+                ultimateBot.getWobbleAssembly().moveArm(-0.5);
+            }
+            ultimateBot.getWobbleAssembly().stopArm();
+
+            ultimateBot.getWobbleAssembly().openGripper();
+            sleep(500);
+
+            while (opModeIsActive() && ultimateBot.getRobotHardware().armReturn.isPressed() == false) {
+                ultimateBot.getWobbleAssembly().moveArm(1.0);
+            }
+            ultimateBot.getWobbleAssembly().stopArm();
         }
-        ultimateBot.getWobbleAssembly().stopArm();
-
-        ultimateBot.getWobbleAssembly().openGripper();
-        sleep(500);
-
-        while(opModeIsActive() &&  ultimateBot.getRobotHardware().armReturn.isPressed() == false)
-        {
-            ultimateBot.getWobbleAssembly().moveArm(1.0);
-        }
-        ultimateBot.getWobbleAssembly().stopArm();
-         */
 
         //stack of 1
-        /*
-        ultimateBot.getShooterAssembly().changeShooterAng(0.67);
-        ultimateBot.getIntakeAssembly().intake();
-        encoderDrive(1.0, 10, 3);
-        turnToAngle(1.0, 15, 1);
+        if(numRings == 1) {
+            ultimateBot.getShooterAssembly().changeShooterAng(0.67);
+            ultimateBot.getIntakeAssembly().intake();
+            encoderDrive(1.0, 10, 3);
+            turnToAngle(1.0, 15, 1);
 
-        ultimateBot.getShooterAssembly().shoot();
-        while(opModeIsActive() && ultimateBot.getRobotHardware().topTouch.isPressed() == false)
-        {
-            ultimateBot.getShooterAssembly().moveLift(1.0);
+            ultimateBot.getShooterAssembly().shoot();
+            while (opModeIsActive() && ultimateBot.getRobotHardware().topTouch.isPressed() == false) {
+                ultimateBot.getShooterAssembly().moveLift(1.0);
+            }
+            ultimateBot.getShooterAssembly().stopLift();
+            ultimateBot.getIntakeAssembly().stopIntake();
+            ultimateBot.getShooterAssembly().openDoor();
+            sleep(500);
+
+            ultimateBot.getShooterAssembly().pushRing();
+            sleep(500);
+            ultimateBot.getShooterAssembly().returnPusher();
+            sleep(500);
+
+            while (opModeIsActive() && ultimateBot.getRobotHardware().bottomTouch.isPressed() == false) {
+                ultimateBot.getShooterAssembly().moveLift(-0.5);
+            }
+            ultimateBot.getShooterAssembly().stopLift();
+            ultimateBot.getShooterAssembly().closeDoor();
+
+            ultimateBot.getShooterAssembly().stopShoot();
+
+            turnToAngle(1.0, -175, 5);
+            rampSpeedEncoderDrive(1.0, -45, 5);
+
+            while (opModeIsActive() && ultimateBot.getRobotHardware().grabTouch.isPressed() == false) {
+                ultimateBot.getWobbleAssembly().moveArm(-0.5);
+            }
+            ultimateBot.getWobbleAssembly().stopArm();
+
+            ultimateBot.getWobbleAssembly().openGripper();
+            sleep(500);
+
+            while (opModeIsActive() && ultimateBot.getRobotHardware().armReturn.isPressed() == false) {
+                ultimateBot.getWobbleAssembly().moveArm(1.0);
+            }
+            ultimateBot.getWobbleAssembly().stopArm();
         }
-        ultimateBot.getShooterAssembly().stopLift();
-        ultimateBot.getIntakeAssembly().stopIntake();
-        ultimateBot.getShooterAssembly().openDoor();
-        sleep(500);
-
-        ultimateBot.getShooterAssembly().pushRing();
-        sleep(500);
-        ultimateBot.getShooterAssembly().returnPusher();
-        sleep(500);
-
-        while(opModeIsActive() && ultimateBot.getRobotHardware().bottomTouch.isPressed() == false)
-        {
-            ultimateBot.getShooterAssembly().moveLift(-0.5);
-        }
-        ultimateBot.getShooterAssembly().stopLift();
-        ultimateBot.getShooterAssembly().closeDoor();
-
-        ultimateBot.getShooterAssembly().stopShoot();
-
-        turnToAngle(1.0, -175, 5);
-        rampSpeedEncoderDrive(1.0, -45, 5);
-
-        while(opModeIsActive() &&  ultimateBot.getRobotHardware().grabTouch.isPressed() == false)
-        {
-            ultimateBot.getWobbleAssembly().moveArm(-0.5);
-        }
-        ultimateBot.getWobbleAssembly().stopArm();
-
-        ultimateBot.getWobbleAssembly().openGripper();
-        sleep(500);
-
-        while(opModeIsActive() &&  ultimateBot.getRobotHardware().armReturn.isPressed() == false)
-        {
-            ultimateBot.getWobbleAssembly().moveArm(1.0);
-        }
-        ultimateBot.getWobbleAssembly().stopArm();
-         */
 
         //stack of 4
-        turnToAngle(1.0, -90, 3);
-        encoderDrive(1.0, -22, 5);
-        turnToAngle(1.0, -175, 5);
+        if(numRings == 4) {
+            turnToAngle(1.0, -90, 3);
+            encoderDrive(1.0, -22, 5);
+            turnToAngle(1.0, -175, 5);
 
-        rampSpeedEncoderDrive(1.0, -72, 7);
+            rampSpeedEncoderDrive(1.0, -72, 7);
 
-        runtime.reset();
-        while(runtime.seconds() < 0.5)
-        {
-            ultimateBot.getChassisAssembly().moveRight(1.0);
-        }
-        ultimateBot.getChassisAssembly().stopMoving();
+            runtime.reset();
+            while (runtime.seconds() < 0.5) {
+                ultimateBot.getChassisAssembly().moveRight(1.0);
+            }
+            ultimateBot.getChassisAssembly().stopMoving();
 
-        while(opModeIsActive() &&  ultimateBot.getRobotHardware().grabTouch.isPressed() == false)
-        {
-            ultimateBot.getWobbleAssembly().moveArm(-0.5);
-        }
-        ultimateBot.getWobbleAssembly().stopArm();
+            while (opModeIsActive() && ultimateBot.getRobotHardware().grabTouch.isPressed() == false) {
+                ultimateBot.getWobbleAssembly().moveArm(-0.5);
+            }
+            ultimateBot.getWobbleAssembly().stopArm();
 
-        ultimateBot.getWobbleAssembly().openGripper();
-        sleep(500);
+            ultimateBot.getWobbleAssembly().openGripper();
+            sleep(500);
 
-        while(opModeIsActive() &&  ultimateBot.getRobotHardware().armReturn.isPressed() == false)
-        {
-            ultimateBot.getWobbleAssembly().moveArm(1.0);
-        }
-        ultimateBot.getWobbleAssembly().stopArm();
+            while (opModeIsActive() && ultimateBot.getRobotHardware().armReturn.isPressed() == false) {
+                ultimateBot.getWobbleAssembly().moveArm(1.0);
+            }
+            ultimateBot.getWobbleAssembly().stopArm();
 
-        encoderDrive(1.0, 24, 5);
+            encoderDrive(1.0, 24, 5);
 
         /*
         //bump four attempt
@@ -283,7 +301,8 @@ public class BlueLeft extends LinearOpMode
         sleep(1000);
         encoderDrive(1.0, 3, 3);
         ultimateBot.getIntakeAssembly().stopIntake();
-*/
+        */
+        }
     }
 
     public void turnToAngle(double speed, double desiredAngle, int numLoops)
@@ -393,53 +412,6 @@ public class BlueLeft extends LinearOpMode
         return String.format(Locale.getDefault(), "%.1f", AngleUnit.DEGREES.normalize(degrees));
     }
 
-
-    public int  getZoneUsingTF(ArrayList<Integer> stack, int numOfScans)
-    {
-        int totalTries = stack.size();
-        telemetry.addData("totalTries ", totalTries);
-        int numRings = 0;
-        int singleCount= 0;
-        int noneCount = 0;
-        int quadCount = 0;
-
-        int scansCount = 0;
-        if(totalTries < numOfScans)
-        {
-            scansCount = totalTries;
-        }
-        else
-        {
-            scansCount= numOfScans;
-        }
-
-        for(int i= totalTries- 1; i >= totalTries - scansCount ; i--)
-        {
-            if(stack.get(i) ==0) { noneCount++;  }
-            else if(stack.get(i) ==1)  { singleCount++;   }
-            else if(stack.get(i) ==4)  { quadCount++;    }
-
-        }
-        telemetry.addData("noneCount ", noneCount);
-        telemetry.addData("singleCount ", singleCount);
-        telemetry.addData("quadCount ", quadCount);
-        telemetry.update();
-        if( noneCount >= singleCount && noneCount >= quadCount) {
-            telemetry.addData("No Ring Score  is " + noneCount + " out of last " + scansCount , "  Zone A") ;
-            numRings  =4;
-        }
-        else if (singleCount >= noneCount && singleCount >= quadCount) {
-            telemetry.addData("Single Ring Score  is " + singleCount + " out of last " + scansCount , " Zone B") ;
-            numRings =1;
-        }
-        else {
-            telemetry.addData("Quad Rings Score  is " + quadCount + " out of last " + scansCount , "Zone C") ;
-            numRings = 1;
-        }
-        telemetry.update();
-        return numRings;
-
-    }
 
     public void straightenLeft(double timeOut)
     {
@@ -559,7 +531,7 @@ public class BlueLeft extends LinearOpMode
             // Turn off RUN_TO_POSITION
             ultimateBot.getChassisAssembly().setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         }
-    }//end of encoderDrive
+    }//end of rampSpeedEncoderDrive
 
     public void encoderDrive(double speed, double inches, double timeoutS)
     {
@@ -735,4 +707,147 @@ public class BlueLeft extends LinearOpMode
 
         sleep(250);
     }//end of encoderSide
+
+    /*
+    public int  getZoneUsingTF(ArrayList<Integer> stack, int numOfScans)
+    {
+        int totalTries = stack.size();
+        telemetry.addData("totalTries ", totalTries);
+        int numRings = 0;
+        int singleCount= 0;
+        int noneCount = 0;
+        int quadCount = 0;
+
+        int scansCount = 0;
+        if(totalTries < numOfScans)
+        {
+            scansCount = totalTries;
+        }
+        else
+        {
+            scansCount= numOfScans;
+        }
+
+        for(int i= totalTries- 1; i >= totalTries - scansCount ; i--)
+        {
+            if(stack.get(i) ==0) { noneCount++;  }
+            else if(stack.get(i) ==1)  { singleCount++;   }
+            else if(stack.get(i) ==4)  { quadCount++;    }
+
+        }
+        telemetry.addData("noneCount ", noneCount);
+        telemetry.addData("singleCount ", singleCount);
+        telemetry.addData("quadCount ", quadCount);
+        telemetry.update();
+        if( noneCount >= singleCount && noneCount >= quadCount) {
+            telemetry.addData("No Ring Score  is " + noneCount + " out of last " + scansCount , "  Zone A") ;
+            numRings  =4;
+        }
+        else if (singleCount >= noneCount && singleCount >= quadCount) {
+            telemetry.addData("Single Ring Score  is " + singleCount + " out of last " + scansCount , " Zone B") ;
+            numRings =1;
+        }
+        else {
+            telemetry.addData("Quad Rings Score  is " + quadCount + " out of last " + scansCount , "Zone C") ;
+            numRings = 1;
+        }
+        telemetry.update();
+        return numRings;
+
+    }
+    */
+
+    public static class RingDeterminationPipeline extends OpenCvPipeline
+    {
+
+        static Telemetry telemetry;
+
+        public RingDeterminationPipeline(Telemetry tele) {
+            telemetry = tele;
+        }
+
+        int numRings;
+
+        @Override
+        public Mat processFrame(Mat input)
+        {
+
+            int startRow = 0;
+            int endRow = 0;
+            int startColumn = 0;
+            int endColumn = 0;
+
+            double[] pixel;
+            Size size = input.size();
+            double height = size.height;
+            double width = size.width;
+
+            double redValue = 0;
+            double greenValue = 0;
+            double blueValue = 0;
+            for (int i=100; i < width; i++)
+            {
+                for (int j=0; j < height; j++)
+                {
+                    pixel = input.get(i,j);
+                    if (pixel != null && pixel.length > 0)
+                    {
+                        redValue = pixel[0];
+                        greenValue = pixel[1];
+                        blueValue= pixel[2];
+                        if (redValue > 150 && greenValue > 50 && blueValue < 50) {
+                            if ( startRow <= 0)
+                                startRow = i;
+                            if (startColumn <= 0)
+                                startColumn = j;
+
+                            if (endRow < i)
+                                endRow = i;
+
+                            if (endColumn < j)
+                                endColumn = j;
+                        }
+                    }
+                    else
+                    {
+                        //telemetry.addData("Pixel Null at",  i );
+                        //telemetry.addData(" ",  j );
+                        //telemetry.update();
+                    }
+                }
+            }
+
+            double ringWidth = endRow - startRow;
+            double ringHeight = endColumn - startColumn;
+
+            double ratio =  0;
+            if (ringHeight > 0.0)
+                ratio = ringWidth/ringHeight;
+
+
+            if (ratio > 0.7)
+                numRings = 4;
+            else if (ratio > 0.1 )
+                numRings = 1;
+            else
+                numRings = 0;
+
+            telemetry.addData("Start Row ",  startRow );
+            telemetry.addData("End Row ",  endRow ); //Display it on telemetry
+            telemetry.addData("Start Column ",  startColumn );
+            telemetry.addData("End Column ",  endColumn );
+            telemetry.addData("Ratio ",  ratio );
+            telemetry.addData("Number of Rings ",  numRings );
+            telemetry.update();
+
+            return input;
+        }
+
+
+        public int getNumRings()
+        {
+            return numRings;
+        }
+    }
 }
+

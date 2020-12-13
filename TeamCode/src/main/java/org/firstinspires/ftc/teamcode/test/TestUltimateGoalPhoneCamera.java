@@ -83,7 +83,7 @@ import static org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocaliz
  * is explained below.
  */
 
-
+@Disabled
 @TeleOp(name="PhoneCameraVuforiaTest", group ="Concept")
 public class TestUltimateGoalPhoneCamera extends LinearOpMode {
 
