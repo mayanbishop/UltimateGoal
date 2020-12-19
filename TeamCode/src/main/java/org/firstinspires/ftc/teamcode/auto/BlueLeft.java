@@ -220,6 +220,7 @@ public class BlueLeft extends LinearOpMode
             ultimateBot.getIntakeAssembly().intake();
             encoderDrive(1.0, 10, 3);
             turnToAngle(1.0, 15, 1);
+            sleep(500);
 
             ultimateBot.getShooterAssembly().shoot();
             while (opModeIsActive() && ultimateBot.getRobotHardware().topTouch.isPressed() == false) {
@@ -244,7 +245,7 @@ public class BlueLeft extends LinearOpMode
             ultimateBot.getShooterAssembly().stopShoot();
 
             turnToAngle(1.0, -175, 5);
-            rampSpeedEncoderDrive(1.0, -45, 5);
+            rampSpeedEncoderDrive(1.0, -46, 5);
 
             while (opModeIsActive() && ultimateBot.getRobotHardware().grabTouch.isPressed() == false) {
                 ultimateBot.getWobbleAssembly().moveArm(-0.5);
@@ -258,6 +259,8 @@ public class BlueLeft extends LinearOpMode
                 ultimateBot.getWobbleAssembly().moveArm(1.0);
             }
             ultimateBot.getWobbleAssembly().stopArm();
+
+            encoderDrive(1.0, 3, 5);
         }
 
         //stack of 4
@@ -266,7 +269,7 @@ public class BlueLeft extends LinearOpMode
             encoderDrive(1.0, -22, 5);
             turnToAngle(1.0, -175, 5);
 
-            rampSpeedEncoderDrive(1.0, -72, 7);
+            rampSpeedEncoderDrive(1.0, -74, 7);
 
             runtime.reset();
             while (runtime.seconds() < 0.5) {
@@ -287,7 +290,7 @@ public class BlueLeft extends LinearOpMode
             }
             ultimateBot.getWobbleAssembly().stopArm();
 
-            encoderDrive(1.0, 24, 5);
+            encoderDrive(1.0, 26, 5);
 
         /*
         //bump four attempt

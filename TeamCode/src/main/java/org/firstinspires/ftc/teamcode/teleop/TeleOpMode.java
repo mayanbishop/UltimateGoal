@@ -20,9 +20,11 @@ public class TeleOpMode extends LinearOpMode {
             (WHEEL_DIAMETER_INCHES * Math.PI);
     final double COUNTS_PER_DEGREE = 9;
     double shooterAngle = 0.85;
+    int pushedRings = 0;
 
     boolean isIntaking = false;
     boolean intakePressed = false;
+    boolean notPowerAng = true;
 
 
     //Creating a Rover robot object
@@ -131,7 +133,7 @@ public class TeleOpMode extends LinearOpMode {
                 intakePressed = true;
             }
 
-            if(shoot == true)
+            if(shoot == true && notPowerAng == true)
             {
                 ultimateBot.getIntakeAssembly().stopIntake();
                 ultimateBot.getShooterAssembly().shoot();
@@ -162,14 +164,51 @@ public class TeleOpMode extends LinearOpMode {
                 ultimateBot.getShooterAssembly().stopShoot();
             }
 
+            else if(shoot == true && notPowerAng == false)
+            {
+                ultimateBot.getIntakeAssembly().stopIntake();
+                ultimateBot.getShooterAssembly().shoot();
+
+                while(opModeIsActive() && ultimateBot.getRobotHardware().topTouch.isPressed() == false)
+                {
+                    ultimateBot.getShooterAssembly().moveLift(1.0);
+                }
+                ultimateBot.getShooterAssembly().stopLift();
+                ultimateBot.getShooterAssembly().openDoor();
+                sleep(500);
+
+                ultimateBot.getShooterAssembly().pushRing();
+                sleep(500);
+                ultimateBot.getShooterAssembly().returnPusher();
+                sleep(500);
+
+                pushedRings = pushedRings + 1;
+
+                if(pushedRings == 3)
+                {
+                    while(opModeIsActive() && ultimateBot.getRobotHardware().bottomTouch.isPressed() == false)
+                    {
+                        ultimateBot.getShooterAssembly().moveLift(-0.5);
+                    }
+                    ultimateBot.getShooterAssembly().stopLift();
+                    ultimateBot.getShooterAssembly().closeDoor();
+
+                    ultimateBot.getShooterAssembly().stopShoot();
+
+                    pushedRings = 0;
+                }
+            }
+
             if(powerShot == true)
             {
                 ultimateBot.getShooterAssembly().powerShotAng();
+                notPowerAng = false;
             }
 
             if(highGoal == true)
             {
                 ultimateBot.getShooterAssembly().highGoalAng();
+                notPowerAng = true;
             }
 
             if(gripOpen == true)
@@ -207,6 +246,7 @@ public class TeleOpMode extends LinearOpMode {
             if(midGoal == true)
             {
                 ultimateBot.getShooterAssembly().midGoalAng();
+                notPowerAng = true;
             }
 
             if(outake == true)
