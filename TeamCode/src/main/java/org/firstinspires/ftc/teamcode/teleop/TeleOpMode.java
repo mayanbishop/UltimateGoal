@@ -1,14 +1,29 @@
 package org.firstinspires.ftc.teamcode.teleop;
 
+import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.Func;
+import org.firstinspires.ftc.robotcore.external.navigation.Acceleration;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.teamcode.assembly.UltimateBot;
 
+import java.util.Locale;
+
 @TeleOp(name = "TeleOpMode", group = "Qualifier")
-public class TeleOpMode extends LinearOpMode {
+public class TeleOpMode extends LinearOpMode
+{
+    Orientation angles;
+    Acceleration gravity;
+
     private double   WHEEL_SPEED = 1.0;
     private static double INTAKE_SPEED = 1.0;
 
@@ -19,7 +34,11 @@ public class TeleOpMode extends LinearOpMode {
     final double COUNTS_PER_INCH = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) /
             (WHEEL_DIAMETER_INCHES * Math.PI);
     final double COUNTS_PER_DEGREE = 9;
+    final double distanceBetweenSensors = 11.5;
+
     double shooterAngle = 0.85;
+    double angleToStraight = 0;
+
     int pushedRings = 0;
 
     boolean isIntaking = false;
@@ -36,8 +55,31 @@ public class TeleOpMode extends LinearOpMode {
     public void runOpMode() {
         ultimateBot.initRobot(hardwareMap);
         ultimateBot.getShooterAssembly().returnPusher();
+        ultimateBot.getShooterAssembly().closeDoor();
         ultimateBot.getShooterAssembly().highGoalAng();
         ultimateBot.getWobbleAssembly().openGripper();
+        ultimateBot.getIntakeAssembly().guardUp();
+
+        //Gyro Setup/Initialization
+        // Set up the parameters with which we will use our IMU. Note that integration
+        // algorithm here just reports accelerations to the logcat log; it doesn't actually
+        // provide positional information.
+        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+        parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
+        parameters.accelUnit           = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
+        parameters.calibrationDataFile = "imuCalibration.json"; // see the calibration sample opmode
+        parameters.loggingEnabled      = true;
+        parameters.loggingTag          = "IMU";
+        parameters.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
+
+        // Retrieve and initialize the IMU. We expect the IMU to be attached to an I2C port
+        // on a Core Device Interface Module, configured to be a sensor of type "AdaFruit IMU",
+        // and named "imu".
+        ultimateBot.getRobotHardware().imu.initialize(parameters);
+
+        // Set up our telemetry dashboard
+        composeTelemetry();
+        telemetry.update();
 
         while (!opModeIsActive() && !isStopRequested()) {
             telemetry.addData("status", "waiting for start command...");
@@ -67,8 +109,22 @@ public class TeleOpMode extends LinearOpMode {
             boolean outake = gamepad2.x;
             boolean stopOutake = gamepad2.b;
 
-            boolean shooterUp = gamepad2.dpad_up;
-            boolean shooterDown = gamepad2.dpad_down;
+            boolean shooterUp = gamepad2.right_bumper;
+            boolean shooterDown = gamepad2.left_bumper;
+
+            boolean straightenRobot = gamepad2.dpad_right;
+            boolean turnToGoal = gamepad2.dpad_left;
+
+            boolean guardDown = gamepad2.dpad_down;
+            boolean guardUp = gamepad2.dpad_up;
+
+            boolean shootRing = gamepad2.y;
+
+            telemetry.addData("front right sensor", "%.2f in", ultimateBot.getRobotHardware().rightFrontSensor.getDistance(DistanceUnit.INCH));
+            telemetry.addData("back right sensor", "%.2f in", ultimateBot.getRobotHardware().rightBackSensor.getDistance(DistanceUnit.INCH));
+            telemetry.addData("back sensor", "%.2f in", ultimateBot.getRobotHardware().backSensor.getDistance(DistanceUnit.INCH));
+
+            telemetry.update();
 
             //Movement
             if (drive < 0) {
@@ -135,7 +191,12 @@ public class TeleOpMode extends LinearOpMode {
 
             if(shoot == true && notPowerAng == true)
             {
+                ultimateBot.getChassisAssembly().stopMoving();
                 ultimateBot.getIntakeAssembly().stopIntake();
+
+              //  turnToGoal(1.0);
+              //  encoderTurn(1.0, 12.036, 5);
+
                 ultimateBot.getShooterAssembly().shoot();
 
                 while(opModeIsActive() && ultimateBot.getRobotHardware().topTouch.isPressed() == false)
@@ -149,9 +210,9 @@ public class TeleOpMode extends LinearOpMode {
                 for(int i = 0; i < 3; i++)
                 {
                     ultimateBot.getShooterAssembly().pushRing();
-                    sleep(500);
+                    sleep(400);
                     ultimateBot.getShooterAssembly().returnPusher();
-                    sleep(500);
+                    sleep(400);
                 }
 
                 while(opModeIsActive() && ultimateBot.getRobotHardware().bottomTouch.isPressed() == false)
@@ -166,6 +227,7 @@ public class TeleOpMode extends LinearOpMode {
 
             else if(shoot == true && notPowerAng == false)
             {
+                ultimateBot.getChassisAssembly().stopMoving();
                 ultimateBot.getIntakeAssembly().stopIntake();
                 ultimateBot.getShooterAssembly().shoot();
 
@@ -178,9 +240,9 @@ public class TeleOpMode extends LinearOpMode {
                 sleep(500);
 
                 ultimateBot.getShooterAssembly().pushRing();
-                sleep(500);
+                sleep(400);
                 ultimateBot.getShooterAssembly().returnPusher();
-                sleep(500);
+                sleep(400);
 
                 pushedRings = pushedRings + 1;
 
@@ -216,6 +278,7 @@ public class TeleOpMode extends LinearOpMode {
                 ultimateBot.getWobbleAssembly().openGripper();
                 sleep(500);
 
+                ultimateBot.getChassisAssembly().stopMoving();
                 while(opModeIsActive() &&  ultimateBot.getRobotHardware().armReturn.isPressed() == false)
                 {
                     ultimateBot.getWobbleAssembly().moveArm(1.0);
@@ -230,11 +293,16 @@ public class TeleOpMode extends LinearOpMode {
 
             if(armMovement > 0 &&  ultimateBot.getRobotHardware().grabTouch.isPressed() == false)
             {
-                ultimateBot.getWobbleAssembly().moveArm(-1.0);
+                ultimateBot.getWobbleAssembly().moveArm(-0.75);
             }
-            else if(armMovement < 0 &&  ultimateBot.getRobotHardware().armReturn.isPressed() == false)
+            else if(armMovement < 0)
             {
-                ultimateBot.getWobbleAssembly().moveArm(0.5);
+                ultimateBot.getChassisAssembly().stopMoving();
+                while(opModeIsActive() &&  ultimateBot.getRobotHardware().armReturn.isPressed() == false)
+                {
+                    ultimateBot.getWobbleAssembly().moveArm(0.75);
+                }
+                ultimateBot.getWobbleAssembly().stopArm();
             }
             else
             {
@@ -258,7 +326,7 @@ public class TeleOpMode extends LinearOpMode {
             {
                 ultimateBot.getIntakeAssembly().stopIntake();
             }
-
+/*
             //up pos = 0.35, down pos = 0.9
             if(shooterUp == true)
             {
@@ -277,8 +345,110 @@ public class TeleOpMode extends LinearOpMode {
                 telemetry.addData("Shooter Angle", shooterAngle);
                 telemetry.update();
             }
+*/
+            if(guardUp == true)
+            {
+                ultimateBot.getIntakeAssembly().guardUp();
+            }
+            if(guardDown == true)
+            {
+                ultimateBot.getIntakeAssembly().guardDown();
+            }
 
+            /*
+            if(straightenRobot == true)
+            {
+                angleToStraight = Math.atan(distanceBetweenSensors/(ultimateBot.getRobotHardware().rightFrontSensor.getDistance(DistanceUnit.INCH)
+                        - ultimateBot.getRobotHardware().rightBackSensor.getDistance(DistanceUnit.INCH)));
+                angleToStraight = 90 - (angleToStraight * 180/Math.PI);
+
+                telemetry.addData("Angle to turn ", angleToStraight);
+                telemetry.update();
+                sleep(2000);
+                encoderTurn(1.0, -angleToStraight, 5.0);
+            }
+
+            if(turnToGoal == true)
+            {
+                angleToStraight = Math.atan(distanceBetweenSensors/(ultimateBot.getRobotHardware().rightFrontSensor.getDistance(DistanceUnit.INCH)
+                        - ultimateBot.getRobotHardware().rightBackSensor.getDistance(DistanceUnit.INCH)));
+
+                double x_distance = (Math.sin(angleToStraight) * 180/Math.PI) * (ultimateBot.getRobotHardware().rightFrontSensor.getDistance(DistanceUnit.INCH)
+                        + ultimateBot.getRobotHardware().rightBackSensor.getDistance(DistanceUnit.INCH));
+                x_distance = x_distance/2;
+
+                double y_distance = (Math.sin(angleToStraight)* 180/Math.PI) * (ultimateBot.getRobotHardware().backSensor.getDistance(DistanceUnit.INCH));
+
+                double angleToGoal = Math.atan((60-x_distance)/(144-y_distance)) * 180/Math.PI;
+                angleToGoal = (angleToStraight * 180/Math.PI) + angleToGoal - 90;
+
+                telemetry.addData("x value ", x_distance);
+                telemetry.addData("y value ", y_distance);
+                telemetry.addData("Angle to turn ", angleToGoal);
+                telemetry.update();
+                //sleep(2000);
+
+                encoderTurn(1.0, angleToGoal, 5.0);
+            }
+
+             */
         }
+    }
+
+    public void turnToGoal(double speed)
+    {
+        double angleToStraight = Math.atan(distanceBetweenSensors/(ultimateBot.getRobotHardware().rightFrontSensor.getDistance(DistanceUnit.INCH)
+                - ultimateBot.getRobotHardware().rightBackSensor.getDistance(DistanceUnit.INCH)));
+
+        double x_distance = (Math.sin(angleToStraight) * 180/Math.PI) * (ultimateBot.getRobotHardware().rightFrontSensor.getDistance(DistanceUnit.INCH)
+                + ultimateBot.getRobotHardware().rightBackSensor.getDistance(DistanceUnit.INCH));
+        x_distance = x_distance/2;
+
+        double y_distance = (Math.sin(angleToStraight)* 180/Math.PI) * (ultimateBot.getRobotHardware().backSensor.getDistance(DistanceUnit.INCH));
+
+        double angleToGoal = Math.atan((60-x_distance)/(144-y_distance)) * 180/Math.PI;
+        angleToGoal = (angleToStraight * 180/Math.PI) + angleToGoal - 90;
+
+        telemetry.addData("x value ", x_distance);
+        telemetry.addData("y value ", y_distance);
+        telemetry.addData("Angle to turn ", angleToGoal);
+        telemetry.update();
+
+        encoderTurn(speed, angleToGoal, 5.0);
+    }
+
+    public void turnToAngle(double speed, double desiredAngle, int numLoops)
+    {
+        double currentAngle = angles.firstAngle;
+        double angleToTurn;
+
+        for(int i = 0; i < numLoops; i++)
+        {
+            readAngle();
+            currentAngle = angles.firstAngle;
+            angleToTurn = desiredAngle - currentAngle;
+
+            if(Math.abs(angleToTurn) > 180)
+            {
+                double newAngleToTurn = 360 - Math.abs(angleToTurn);
+                if(angleToTurn > 0)
+                {
+                    newAngleToTurn = -Math.abs(newAngleToTurn);
+                    angleToTurn = newAngleToTurn;
+                }
+                else
+                {
+                    newAngleToTurn = Math.abs(newAngleToTurn);
+                    angleToTurn = newAngleToTurn;
+                }
+            }
+
+            encoderTurn(speed, angleToTurn, 5);
+        }
+
+        telemetry.addData("current angle", currentAngle);
+        telemetry.addData("desired angle", desiredAngle);
+        telemetry.update();
     }
 
     /**
@@ -423,7 +593,7 @@ public class TeleOpMode extends LinearOpMode {
                         ultimateBot.getChassisAssembly().getBackRightWheelCurrentPosition(),
                         ultimateBot.getChassisAssembly().getFrontLeftWheelCurrentPosition(),
                         ultimateBot.getChassisAssembly().getFrontRightWheelCurrentPosition());
-                telemetry.update();
+                //telemetry.update();
             }
 
             // Stop all motion;
@@ -433,4 +603,76 @@ public class TeleOpMode extends LinearOpMode {
             ultimateBot.getChassisAssembly().setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         }
     }//end of encoderTurn
+
+    String formatAngle(AngleUnit angleUnit, double angle) {
+        return formatDegrees(AngleUnit.DEGREES.fromUnit(angleUnit, angle));
+    }
+
+    String formatDegrees(double degrees){
+        return String.format(Locale.getDefault(), "%.1f", AngleUnit.DEGREES.normalize(degrees));
+    }
+
+    void composeTelemetry() {
+
+        // At the beginning of each telemetry update, grab a bunch of data
+        // from the IMU that we will then display in separate lines.
+        telemetry.addAction(new Runnable() { @Override public void run()
+        {
+            // Acquiring the angles is relatively expensive; we don't want
+            // to do that in each of the three items that need that info, as that's
+            // three times the necessary expense.
+            angles   = ultimateBot.getRobotHardware().imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+            gravity  = ultimateBot.getRobotHardware().imu.getGravity();
+        }
+        });
+
+        telemetry.addLine()
+                .addData("status", new Func<String>() {
+                    @Override public String value() {
+                        return ultimateBot.getRobotHardware().imu.getSystemStatus().toShortString();
+                    }
+                })
+                .addData("calib", new Func<String>() {
+                    @Override public String value() {
+                        return ultimateBot.getRobotHardware().imu.getCalibrationStatus().toString();
+                    }
+                });
+
+        telemetry.addLine()
+                .addData("heading", new Func<String>() {
+                    @Override public String value() {
+                        return formatAngle(angles.angleUnit, angles.firstAngle);
+                    }
+                })
+                .addData("roll", new Func<String>() {
+                    @Override public String value() {
+                        return formatAngle(angles.angleUnit, angles.secondAngle);
+                    }
+                })
+                .addData("pitch", new Func<String>() {
+                    @Override public String value() {
+                        return formatAngle(angles.angleUnit, angles.thirdAngle);
+                    }
+                });
+
+        telemetry.addLine()
+                .addData("grvty", new Func<String>() {
+                    @Override public String value() {
+                        return gravity.toString();
+                    }
+                })
+                .addData("mag", new Func<String>() {
+                    @Override public String value() {
+                        return String.format(Locale.getDefault(), "%.3f",
+                                Math.sqrt(gravity.xAccel*gravity.xAccel
+                                        + gravity.yAccel*gravity.yAccel
+                                        + gravity.zAccel*gravity.zAccel));
+                    }
+                });
+    }
+
+    void readAngle()
+    {
+        angles   = ultimateBot.getRobotHardware().imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+    }
 }

@@ -8,6 +8,7 @@ import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
@@ -36,6 +37,7 @@ public class RobotHardware
     public Servo shooterAngleServo = null;
     public Servo gripper = null;
     public Servo door = null;
+    public Servo guard = null;
 
 
     //Webcam
@@ -48,6 +50,11 @@ public class RobotHardware
     Rev2mDistanceSensor backRightSensor = null;
     Rev2mDistanceSensor frontLeftSensor = null;
     Rev2mDistanceSensor backLeftSensor = null;
+
+    //Distance Sensors
+    public ModernRoboticsI2cRangeSensor rightFrontSensor = null;
+    public ModernRoboticsI2cRangeSensor rightBackSensor = null;
+    public ModernRoboticsI2cRangeSensor backSensor = null;
 
     Rev2mDistanceSensor backLaser = null;
     Rev2mDistanceSensor frontLaser = null;
@@ -102,6 +109,8 @@ public class RobotHardware
         shooterAngleServo = hwMap.get(Servo.class, "shooterAngleServo");
         gripper = hwMap.get(Servo.class, "gripper");
         door = hwMap.get(Servo.class, "door");
+        guard = hwMap.get(Servo.class, "guard");
+
 
         bottomTouch = hwMap.get(TouchSensor.class, "bottomTouch");
         topTouch = hwMap.get(TouchSensor.class, "topTouch");
@@ -110,6 +119,11 @@ public class RobotHardware
 
         webcam = hwMap.get(WebcamName.class, "webcam");
         imu = hwMap.get(BNO055IMU.class, "imu");
+
+        rightFrontSensor = hwMap.get(ModernRoboticsI2cRangeSensor.class, "rightFrontSensor");
+        rightBackSensor = hwMap.get(ModernRoboticsI2cRangeSensor.class, "rightBackSensor");
+        backSensor = hwMap.get(ModernRoboticsI2cRangeSensor.class, "backSensor");
+
 /*
         frontRightSensor = hwMap.get(Rev2mDistanceSensor.class, "frontRightSensor");
         backRightSensor = hwMap.get(Rev2mDistanceSensor.class, "backRightSensor");

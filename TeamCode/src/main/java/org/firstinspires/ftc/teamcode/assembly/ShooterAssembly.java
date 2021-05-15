@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.assembly;
 
+import com.qualcomm.robotcore.hardware.DcMotor;
+
 public class ShooterAssembly
 {
     final public double shootingSpeed = 1.0;
@@ -32,11 +34,11 @@ public class ShooterAssembly
 
     public void pushRing()
     {
-        robotHardware.pusher.setPosition(0.4);
+        robotHardware.pusher.setPosition(0.37);
     }
     public void returnPusher()
     {
-        robotHardware.pusher.setPosition(0.5075);
+        robotHardware.pusher.setPosition(0.4775);
     }
 
     public void openDoor()
@@ -70,6 +72,6 @@ public class ShooterAssembly
 
     public void autoPowerShotAng()
     {
-        robotHardware.shooterAngleServo.setPosition(0.72);
+        robotHardware.shooterAngleServo.setPosition(0.73);
     }
 }
