@@ -33,7 +33,7 @@ import java.util.Locale;
 
 
 
-@Autonomous(name = "BlueLeft", group = "Qualifier")
+@Autonomous(name = "League-BlueLeft", group = "League")
 public class BlueLeft extends LinearOpMode
 {
 
