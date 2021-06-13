@@ -207,12 +207,12 @@ public class TeleOpMode extends LinearOpMode
                 ultimateBot.getShooterAssembly().openDoor();
                 sleep(500);
 
-                for(int i = 0; i < 3; i++)
+                for(int i = 0; i < 4; i++)
                 {
                     ultimateBot.getShooterAssembly().pushRing();
                     sleep(400);
                     ultimateBot.getShooterAssembly().returnPusher();
-                    sleep(400);
+                    sleep(600);
                 }
 
                 while(opModeIsActive() && ultimateBot.getRobotHardware().bottomTouch.isPressed() == false)
