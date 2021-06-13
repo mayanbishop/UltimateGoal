@@ -1,7 +1,7 @@
+
 package org.firstinspires.ftc.teamcode.auto;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -33,9 +33,9 @@ import java.util.List;
 import java.util.Locale;
 
 
-@Disabled
-@Autonomous(name = "League-BlueLeft", group = "League")
-public class LeagueBlueLeft extends LinearOpMode
+
+@Autonomous(name = "BRHWP", group = "League")
+public class BRHWP extends LinearOpMode
 {
 
     // State used for updating telemetry
@@ -130,7 +130,7 @@ public class LeagueBlueLeft extends LinearOpMode
         //Wait for Start
         telemetry.addData("Waiting for start", "");
 
-        ultimateBot.getShooterAssembly().autoPowerShotAng();
+        ultimateBot.getShooterAssembly().changeShooterAng(0.63);
         ultimateBot.getShooterAssembly().returnPusher();
         ultimateBot.getWobbleAssembly().closeGripper();
         ultimateBot.getShooterAssembly().closeDoor();
@@ -157,38 +157,30 @@ public class LeagueBlueLeft extends LinearOpMode
         telemetry.addData("numRings", numRings);
         telemetry.update();
 
-        rampSpeedEncoderDrive(1.0, 5, 5);
-        turnToAngle(1.0, -11, 1);
-        rampSpeedEncoderDrive(1.0, 20, 5);
-        turnToAngle(1.0, -2, 1);
+        rampSpeedEncoderDrive(0.7, 60, 7);
+        turnToAngle(1, 27, 1);
 
         ultimateBot.getShooterAssembly().shoot();
-        while(opModeIsActive() && ultimateBot.getRobotHardware().topTouch.isPressed() == false)
+        ultimateBot.getIntakeAssembly().stopIntake();
+
+        while (opModeIsActive() && ultimateBot.getRobotHardware().topTouch.isPressed() == false)
         {
             ultimateBot.getShooterAssembly().moveLift(1.0);
         }
+
         ultimateBot.getShooterAssembly().stopLift();
         ultimateBot.getShooterAssembly().openDoor();
         sleep(500);
 
-        ultimateBot.getShooterAssembly().pushRing();
-        sleep(400);
-        ultimateBot.getShooterAssembly().returnPusher();
-        sleep(400);
-        turnToAngle(1.0, 1, 1);
+        for(int i = 0; i < 3; i++)
+        {
+            ultimateBot.getShooterAssembly().pushRing();
+            sleep(400);
+            ultimateBot.getShooterAssembly().returnPusher();
+            sleep(400);
+        }
 
-        ultimateBot.getShooterAssembly().pushRing();
-        sleep(400);
-        ultimateBot.getShooterAssembly().returnPusher();
-        sleep(400);
-        turnToAngle(1.0, 6, 1);
-
-        ultimateBot.getShooterAssembly().pushRing();
-        sleep(400);
-        ultimateBot.getShooterAssembly().returnPusher();
-        sleep(400);
-
-        while(opModeIsActive() && ultimateBot.getRobotHardware().bottomTouch.isPressed() == false)
+        while (opModeIsActive() && ultimateBot.getRobotHardware().bottomTouch.isPressed() == false)
         {
             ultimateBot.getShooterAssembly().moveLift(-0.5);
         }
@@ -197,171 +189,63 @@ public class LeagueBlueLeft extends LinearOpMode
 
         ultimateBot.getShooterAssembly().stopShoot();
 
-        //stack of 0
+
         if(numRings == 0)
         {
-            turnToAngle(1.0, 0, 1);
-            rampSpeedEncoderDrive(1.0, 44, 5);
-            turnToAngle(1.0, -90, 3);
-            rampSpeedEncoderDrive(1.0, -5, 5);
-            while (opModeIsActive() && ultimateBot.getRobotHardware().grabTouch.isPressed() == false) {
+            rampSpeedEncoderDrive(1, 12, 4);
+            turnToAngle(1, -85, 4);
+            rampSpeedEncoderDrive(1, -15, 4);
+
+            while (opModeIsActive() && ultimateBot.getRobotHardware().grabTouch.isPressed() == false)
+            {
                 ultimateBot.getWobbleAssembly().moveArm(-0.5);
             }
             ultimateBot.getWobbleAssembly().stopArm();
-
             ultimateBot.getWobbleAssembly().openGripper();
             sleep(500);
 
-            /*while (opModeIsActive() && ultimateBot.getRobotHardware().armReturn.isPressed() == false) {
+            while (opModeIsActive() && ultimateBot.getRobotHardware().armReturn.isPressed() == false)
+            {
                 ultimateBot.getWobbleAssembly().moveArm(1.0);
             }
             ultimateBot.getWobbleAssembly().stopArm();
 
-            rampSpeedEncoderDrive(1.0, 5, 5);*/
-
-            turnToAngle(1.0,26, 3);
-
-            rampSpeedEncoderDrive(1.0, -42, 5);
-
-            sleep(500);
-
-            ultimateBot.getWobbleAssembly().closeGripper();
-            sleep(250);
-
-            rampSpeedEncoderDrive(1.0, 39, 5);
-
-            sleep(250);
-
-            turnToAngle(1.0,-90, 3);
-
-            sleep(250);
-
-            ultimateBot.getWobbleAssembly().openGripper();
-
-            sleep(250);
-
-            while (opModeIsActive() && ultimateBot.getRobotHardware().armReturn.isPressed() == false) {
-                ultimateBot.getWobbleAssembly().moveArm(1.0);
-                ultimateBot.getChassisAssembly().moveLeft(0.3);
-            }
-            ultimateBot.getChassisAssembly().stopMoving();
-            ultimateBot.getWobbleAssembly().stopArm();
-
-            sleep(250);
-
+            rampSpeedEncoderDrive(1, 10, 7);
         }
 
-        //stack of 1
-        if(numRings == 1) {
-            ultimateBot.getShooterAssembly().changeShooterAng(0.69);
-            ultimateBot.getIntakeAssembly().intake();
-            encoderDrive(1.0, 10, 3);
-            turnToAngle(1.0, 17, 1);
-            sleep(500);
+        if(numRings == 1)
+        {
+            turnToAngle(1, 0, 3);
+            rampSpeedEncoderDrive(1, 36, 4);
+            turnToAngle(1, -90, 2);
+            rampSpeedEncoderDrive(1, 4, 3);
 
-            ultimateBot.getShooterAssembly().shoot();
-            while (opModeIsActive() && ultimateBot.getRobotHardware().topTouch.isPressed() == false) {
-                ultimateBot.getShooterAssembly().moveLift(1.0);
-            }
-            ultimateBot.getShooterAssembly().stopLift();
-            ultimateBot.getIntakeAssembly().stopIntake();
-            ultimateBot.getShooterAssembly().openDoor();
-            sleep(500);
-
-            ultimateBot.getShooterAssembly().pushRing();
-            sleep(500);
-            ultimateBot.getShooterAssembly().returnPusher();
-            sleep(500);
-
-            while (opModeIsActive() && ultimateBot.getRobotHardware().bottomTouch.isPressed() == false) {
-                ultimateBot.getShooterAssembly().moveLift(-0.5);
-            }
-            ultimateBot.getShooterAssembly().stopLift();
-            ultimateBot.getShooterAssembly().closeDoor();
-
-            ultimateBot.getShooterAssembly().stopShoot();
-
-            turnToAngle(1.0, -170, 5);
-            rampSpeedEncoderDrive(1.0, -46, 5);
-
-            while (opModeIsActive() && ultimateBot.getRobotHardware().grabTouch.isPressed() == false) {
+            while (opModeIsActive() && ultimateBot.getRobotHardware().grabTouch.isPressed() == false)
+            {
                 ultimateBot.getWobbleAssembly().moveArm(-0.5);
             }
             ultimateBot.getWobbleAssembly().stopArm();
-
             ultimateBot.getWobbleAssembly().openGripper();
             sleep(500);
 
-            while (opModeIsActive() && ultimateBot.getRobotHardware().armReturn.isPressed() == false) {
+            while (opModeIsActive() && ultimateBot.getRobotHardware().armReturn.isPressed() == false)
+            {
                 ultimateBot.getWobbleAssembly().moveArm(1.0);
             }
             ultimateBot.getWobbleAssembly().stopArm();
 
-            encoderDrive(1.0, 3, 5);
-
-            /*turnToAngle(1.0, -1, 1);
-            sleep(250);
-            turnToAngle(1.0, 17,3);
-
-            encoderDrive(1.0, -48, 5.0);
-            ultimateBot.getWobbleAssembly().openGripper();
-            sleep(500);
-
-             */
+            rampSpeedEncoderDrive(1, 13, 5);
+            turnToAngle(1, 0, 3);
+            rampSpeedEncoderDrive(1, -18, 5);
         }
 
-        //stack of 4
         if(numRings == 4)
         {
-            //shooting from stack
-            turnToAngle(1.0, 0, 1);
-            ultimateBot.getShooterAssembly().changeShooterAng(0.69);
-            ultimateBot.getIntakeAssembly().intake();
-            encoderDrive(0.2, 5, 3);
-            sleep(500);
-            encoderDrive(0.2, 15, 3);
-            turnToAngle(1.0, 13, 1);
-            sleep(250);
+            rampSpeedEncoderDrive(1, 60, 7);
+            turnToAngle(1, -90, 3);
 
-            ultimateBot.getShooterAssembly().shoot();
-            ultimateBot.getIntakeAssembly().stopIntake();
-            while (opModeIsActive() && ultimateBot.getRobotHardware().topTouch.isPressed() == false) {
-                ultimateBot.getShooterAssembly().moveLift(1.0);
-            }
-            ultimateBot.getShooterAssembly().stopLift();
-            ultimateBot.getShooterAssembly().openDoor();
-            sleep(500);
-
-            for(int i = 0; i < 3; i++)
+            while (opModeIsActive() && ultimateBot.getRobotHardware().grabTouch.isPressed() == false)
             {
-                ultimateBot.getShooterAssembly().pushRing();
-                sleep(400);
-                ultimateBot.getShooterAssembly().returnPusher();
-                sleep(400);
-            }
-
-            while (opModeIsActive() && ultimateBot.getRobotHardware().bottomTouch.isPressed() == false) {
-                ultimateBot.getShooterAssembly().moveLift(-0.5);
-            }
-            ultimateBot.getShooterAssembly().stopLift();
-            ultimateBot.getShooterAssembly().closeDoor();
-
-            ultimateBot.getShooterAssembly().stopShoot();
-
-            //woble goal placing
-            turnToAngle(1.0, -90, 3);
-            encoderDrive(1.0, -22, 5);
-            turnToAngle(1.0, -175, 5);
-
-            rampSpeedEncoderDrive(1.0, -60, 7);
-
-            runtime.reset();
-            while (runtime.seconds() < 0.5) {
-                ultimateBot.getChassisAssembly().moveRight(1.0);
-            }
-            ultimateBot.getChassisAssembly().stopMoving();
-
-            while (opModeIsActive() && ultimateBot.getRobotHardware().grabTouch.isPressed() == false) {
                 ultimateBot.getWobbleAssembly().moveArm(-0.5);
             }
             ultimateBot.getWobbleAssembly().stopArm();
@@ -369,14 +253,19 @@ public class LeagueBlueLeft extends LinearOpMode
             ultimateBot.getWobbleAssembly().openGripper();
             sleep(500);
 
-            while (opModeIsActive() && ultimateBot.getRobotHardware().armReturn.isPressed() == false) {
+            while (opModeIsActive() && ultimateBot.getRobotHardware().armReturn.isPressed() == false)
+            {
                 ultimateBot.getWobbleAssembly().moveArm(1.0);
             }
             ultimateBot.getWobbleAssembly().stopArm();
 
-            encoderDrive(1.0, 30, 5);
+            rampSpeedEncoderDrive(1, 36, 5);
+            turnToAngle(1, 0, 2);
+            rampSpeedEncoderDrive(1, -36, 5);
         }
     }
+
+
 
     public void turnToAngle(double speed, double desiredAngle, int numLoops)
     {
@@ -897,10 +786,10 @@ public class LeagueBlueLeft extends LinearOpMode
             if (ringHeight > 0.0)
                 ratio = ringWidth/ringHeight;
 
-
-            if (ratio > 0.7)
+            if(ringWidth>70){}
+            else if (ringWidth > 20)
                 numRings = 4;
-            else if (ratio > 0.1 )
+            else if (ringWidth > 0.1 )
                 numRings = 1;
             else
                 numRings = 0;
@@ -910,6 +799,8 @@ public class LeagueBlueLeft extends LinearOpMode
             telemetry.addData("Start Column ",  startColumn );
             telemetry.addData("End Column ",  endColumn );
             telemetry.addData("Ratio ",  ratio );
+            telemetry.addData("Width:", ringWidth);
+            telemetry.addData("Height:", ringHeight);
             telemetry.addData("Number of Rings ",  numRings );
             telemetry.update();
 
@@ -923,4 +814,3 @@ public class LeagueBlueLeft extends LinearOpMode
         }
     }
 }
-

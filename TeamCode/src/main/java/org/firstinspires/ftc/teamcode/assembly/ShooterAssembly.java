@@ -38,7 +38,7 @@ public class ShooterAssembly
     }
     public void returnPusher()
     {
-        robotHardware.pusher.setPosition(0.4775);
+        robotHardware.pusher.setPosition(0.48);
     }
 
     public void openDoor()
@@ -57,18 +57,21 @@ public class ShooterAssembly
 
     public void powerShotAng()
     {
-        robotHardware.shooterAngleServo.setPosition(0.71);
+        robotHardware.shooterAngleServo.setPosition(0.66);
     }
+    //0.67
 
     public void highGoalAng()
     {
-        robotHardware.shooterAngleServo.setPosition(0.68);
+        robotHardware.shooterAngleServo.setPosition(0.63);
     }
+    //0.64
 
     public void midGoalAng()
     {
-        robotHardware.shooterAngleServo.setPosition(0.77);
+        robotHardware.shooterAngleServo.setPosition(0.74);
     }
+    //0.77
 
     public void autoPowerShotAng()
     {
